@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin - Upload & Posts</title>
+  <style>body{font-family:sans-serif;padding:20px}label{display:block;margin-top:8px}input,textarea{width:100%;padding:8px}button{margin-top:8px;padding:8px 12px}</style>
+</head>
+<body>
+  <h1>Admin</h1>
+  <section>
+    <h2>Upload file (image/video)</h2>
+    <input id="fileInput" type="file">
+    <button id="uploadBtn">Upload</button>
+    <div id="uploadResult"></div>
+  </section>
+
+  <section>
+    <h2>Create Post / Article</h2>
+    <label>Title<input id="postTitle"></label>
+    <label>Content (Markdown)<textarea id="postContent" rows="10"></textarea></label>
+    <button id="createPost">Create Post</button>
+    <div id="postResult"></div>
+  </section>
+
+  <section>
+    <h2>Chat as Bikash (requires OpenAI key)</h2>
+    <label>OpenAI API Key (will be used for requests this session)<input id="apiKey" placeholder="sk-..."> </label>
+    <div id="chatLog" style="border:1px solid #ddd;padding:8px;height:200px;overflow:auto;margin-top:8px"></div>
+    <input id="chatInput" placeholder="Message to Bikash"> <button id="sendChat">Send</button>
+  </section>
+
+<script>
+const uploadBtn=document.getElementById('uploadBtn');
+uploadBtn.addEventListener('click', async ()=>{
+  const f=document.getElementById('fileInput').files[0];
+  if(!f) return alert('Select file');
+  const fd=new FormData(); fd.append('file',f);
+  const res=await fetch('/upload',{method:'POST',body:fd});
+  const j=await res.json(); document.getElementById('uploadResult').innerText=JSON.stringify(j);
+});
+
+document.getElementById('createPost').addEventListener('click', async ()=>{
+  const title=document.getElementById('postTitle').value;
+  const content=document.getElementById('postContent').value;
+  const res=await fetch('/post',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({title,content})});
+  const j=await res.json(); document.getElementById('postResult').innerText=JSON.stringify(j);
+});
+
+const chatLog=document.getElementById('chatLog');
+document.getElementById('sendChat').addEventListener('click', async ()=>{
+  const key=document.getElementById('apiKey').value.trim();
+  const message=document.getElementById('chatInput').value;
+  if(!message) return;
+  chatLog.innerHTML += `<div><strong>You:</strong> ${message}</div>`;
+  const res=await fetch('/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization': key? 'Bearer '+key : ''},body:JSON.stringify({message,history:[]})});
+  const j=await res.json();
+  chatLog.innerHTML += `<div><strong>Bikash:</strong> ${j.reply || JSON.stringify(j)}</div>`;
+  chatLog.scrollTop = chatLog.scrollHeight;
+});
+</script>
+</body>
+</html>
