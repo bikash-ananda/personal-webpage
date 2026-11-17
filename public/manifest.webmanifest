@@ -1,0 +1,10 @@
+{
+  "name": "Bikash Personal OS",
+  "short_name": "Bikash OS",
+  "description": "Personal digital workspace",
+  "start_url": "/workspace",
+  "display": "standalone",
+  "background_color": "#090d18",
+  "theme_color": "#090d18",
+  "icons": []
+}
