@@ -23,6 +23,7 @@ export default async function WorkspaceSection({params}:{params:Promise<{section
  const {section}=await params; const item=sections[section]; if(!item) notFound(); const Icon=item.icon;
  return <main className="main" style={{marginLeft:0,minHeight:"100vh"}}>
   <header className="topbar"><Link href="/workspace" className="crumb"><ArrowLeft size={13} style={{display:"inline",verticalAlign:"middle",marginRight:8}}/>BACK TO COMMAND CENTRE</Link><div className="top-actions"><span className="mono" style={{fontSize:10}}>OWNER WORKSPACE</span></div></header>
+  <nav className="module-nav" aria-label="Workspace modules"><Link href="/workspace/projects">Projects</Link><Link href="/workspace/tasks">Tasks</Link><Link href="/workspace/assistant">AI assistant</Link><Link href="/workspace/agents">Agents</Link><Link href="/workspace/hardware">Hardware</Link><Link href="/workspace/research">Research</Link><Link href="/workspace/knowledge">Knowledge</Link><Link href="/workspace/automations">Automations</Link></nav>
   <div className="content" style={{maxWidth:1100}}><div className="eyebrow">{item.eyebrow}</div>
    <div style={{display:"flex",alignItems:"center",gap:15,marginTop:15}}><span className="stat-icon" style={{width:44,height:44}}><Icon size={21}/></span><h1 style={{font:"700 30px Manrope",letterSpacing:"-.04em",margin:0}}>{item.title}</h1></div>
    <p className="muted" style={{fontSize:13,lineHeight:1.8,maxWidth:760,marginTop:15}}>{item.description}</p>
