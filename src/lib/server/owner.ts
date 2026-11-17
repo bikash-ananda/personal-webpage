@@ -17,3 +17,29 @@ export async function getOwnerContext(): Promise<OwnerContext> {
 
   return { ok: true, ownerId: session.user.id };
 }
+
+export function hasTrustedMutationOrigin(request: Request): boolean {
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+
+  let normalized: string;
+  try {
+    normalized = new URL(origin).origin;
+  } catch {
+    return false;
+  }
+
+  const configured = process.env.BETTER_AUTH_URL;
+  const allowed = new Set([
+    "https://bikashbhattarai.com.np",
+    "https://www.bikashbhattarai.com.np",
+  ]);
+  if (configured) {
+    try {
+      allowed.add(new URL(configured).origin);
+    } catch {
+      return false;
+    }
+  }
+  return allowed.has(normalized);
+}
