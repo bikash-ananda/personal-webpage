@@ -29,3 +29,37 @@ jobs:
         run: npm run lint
       - name: Production build
         run: npm run build
+
+
+  database-migrations:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: personal_os_test
+          POSTGRES_PASSWORD: personal_os_test
+          POSTGRES_DB: personal_os_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U personal_os_test -d personal_os_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Create minimal Better Auth user table fixture
+        env:
+          PGPASSWORD: personal_os_test
+        run: psql -h 127.0.0.1 -U personal_os_test -d personal_os_test -v ON_ERROR_STOP=1 -c 'CREATE TABLE "user" (id text PRIMARY KEY);'
+      - name: Apply Personal OS core migration
+        env:
+          PGPASSWORD: personal_os_test
+        run: psql -h 127.0.0.1 -U personal_os_test -d personal_os_test -v ON_ERROR_STOP=1 -f db/migrations/0001_personal_os_core.sql
+      - name: Apply hardware inventory and BOM migration
+        env:
+          PGPASSWORD: personal_os_test
+        run: psql -h 127.0.0.1 -U personal_os_test -d personal_os_test -v ON_ERROR_STOP=1 -f db/migrations/0002_hardware_inventory_bom.sql
