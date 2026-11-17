@@ -11,7 +11,7 @@ const secondary: React.CSSProperties = { ...primary, background:"var(--panel2)",
 export default function WorkspaceData({ section }: { section: "projects" | "tasks" }) {
  const isProjects = section === "projects";
  const [projects,setProjects] = useState<Project[]>([]), [tasks,setTasks] = useState<Task[]>([]);
- const [loading,setLoading] = useState(true), [saving,setSaving] = useState(false), [error,setError] = useState(""), [showForm,setShowForm] = useState(false);
+ const [loading,setLoading] = useState(true), [saving,setSaving] = useState(false), [importing,setImporting] = useState(false), [error,setError] = useState(""), [showForm,setShowForm] = useState(false);
  const [name,setName] = useState(""), [summary,setSummary] = useState(""), [title,setTitle] = useState(""), [description,setDescription] = useState("");
  const [priority,setPriority] = useState("medium"), [projectId,setProjectId] = useState(""), [dueAt,setDueAt] = useState("");
  const load = useCallback(async () => {
@@ -26,6 +26,17 @@ export default function WorkspaceData({ section }: { section: "projects" | "task
   finally { setLoading(false); }
  },[]);
  useEffect(()=>{ void load(); },[load]);
+ async function importKnownProjects() {
+  setImporting(true); setError("");
+  try {
+   const response=await fetch("/api/projects/import-known",{method:"POST"});
+   const data=await response.json();
+   if(!response.ok) throw new Error(data.error||"Project import failed.");
+   await load();
+   setError(data.imported+" known projects imported; "+data.total+" projects now in your portfolio.");
+  } catch(e) { setError(e instanceof Error?e.message:"Project import failed."); }
+  finally { setImporting(false); }
+ }
  async function updateStatus(id:string,status:string) {
   setError("");
   try {
@@ -49,7 +60,7 @@ export default function WorkspaceData({ section }: { section: "projects" | "task
  return <div style={{maxWidth:1050}}>
   <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginTop:26,marginBottom:20}}>
    <div><div className="eyebrow">LIVE OWNER DATA · POSTGRESQL</div><h2 style={{font:"700 20px Manrope",margin:"8px 0 5px"}}>{isProjects?"Your projects":"Your task queue"}</h2><p className="muted" style={{fontSize:11,margin:0}}>{isProjects?"Real project records stored in your private workspace.":"Tasks linked to projects, priorities and due dates."}</p></div>
-   <div style={{display:"flex",gap:8}}><button type="button" style={secondary} onClick={()=>void load()} disabled={loading}><RefreshCw size={13}/> Refresh</button><button type="button" style={primary} onClick={()=>setShowForm(v=>!v)}><Plus size={14}/>{isProjects?"New project":"New task"}</button></div>
+   <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{isProjects&&<button type="button" style={secondary} onClick={()=>void importKnownProjects()} disabled={importing}><FolderKanban size={13}/>{importing?"Importing…":"Import known projects"}</button>}<button type="button" style={secondary} onClick={()=>void load()} disabled={loading}><RefreshCw size={13}/> Refresh</button><button type="button" style={primary} onClick={()=>setShowForm(v=>!v)}><Plus size={14}/>{isProjects?"New project":"New task"}</button></div>
   </div>
   {error && <div role="alert" style={{display:"flex",gap:9,alignItems:"center",padding:13,marginBottom:15,border:"1px solid rgba(244,154,154,.25)",borderRadius:10,background:"rgba(244,154,154,.06)",color:"#f49a9a",fontSize:11}}><CircleAlert size={15}/>{error}</div>}
   {showForm && <form onSubmit={submit} className="panel" style={{display:"grid",gap:12,marginBottom:17}}>
