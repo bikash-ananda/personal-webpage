@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import PWARegister from "./components/PWARegister";
+import InstallApp from "./components/InstallApp";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://bikashbhattarai.com.np"),
@@ -21,7 +23,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body><PWARegister />{children}<InstallApp /></body>
     </html>
   );
 }
