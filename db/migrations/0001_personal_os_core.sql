@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS personal_projects (
   metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  archived_at timestamptz
+  archived_at timestamptz,
+  UNIQUE(id, owner_id)
 );
 CREATE INDEX IF NOT EXISTS personal_projects_owner_status_idx ON personal_projects(owner_id,status,updated_at DESC);
 
@@ -31,7 +32,8 @@ CREATE TABLE IF NOT EXISTS personal_tasks (
   metadata jsonb NOT NULL DEFAULT '{}'::jsonb,
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CHECK (status <> 'done' OR completed_at IS NOT NULL)
+  CHECK (status <> 'done' OR completed_at IS NOT NULL),
+  FOREIGN KEY (project_id, owner_id) REFERENCES personal_projects(id, owner_id) ON DELETE SET NULL (project_id)
 );
 CREATE INDEX IF NOT EXISTS personal_tasks_owner_status_due_idx ON personal_tasks(owner_id,status,due_at);
 CREATE INDEX IF NOT EXISTS personal_tasks_project_idx ON personal_tasks(project_id);
@@ -49,7 +51,8 @@ CREATE TABLE IF NOT EXISTS personal_knowledge (
   tags text[] NOT NULL DEFAULT '{}',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  deleted_at timestamptz
+  deleted_at timestamptz,
+  FOREIGN KEY (project_id, owner_id) REFERENCES personal_projects(id, owner_id) ON DELETE SET NULL (project_id)
 );
 CREATE INDEX IF NOT EXISTS personal_knowledge_owner_updated_idx ON personal_knowledge(owner_id,updated_at DESC);
 CREATE INDEX IF NOT EXISTS personal_knowledge_tags_idx ON personal_knowledge USING gin(tags);
