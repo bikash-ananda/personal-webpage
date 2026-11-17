@@ -59,7 +59,7 @@ export default function WorkspaceData({ section, readOnlyPreview = false }: { se
  const list = isProjects ? projects : tasks;
  return <div style={{maxWidth:1050}}>
   <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:12,flexWrap:"wrap",marginTop:26,marginBottom:20}}>
-   <div><div className="eyebrow">LIVE OWNER DATA · POSTGRESQL</div><h2 style={{font:"700 20px Manrope",margin:"8px 0 5px"}}>{isProjects?"Your projects":"Your task queue"}</h2><p className="muted" style={{fontSize:11,margin:0}}>{isProjects?"Real project records stored in your private workspace.":"Tasks linked to projects, priorities and due dates."}</p></div>
+   <div><div className="eyebrow">{readOnlyPreview?"PUBLIC PREVIEW · PRIVATE DATA LOCKED":"LIVE OWNER DATA · POSTGRESQL"}</div><h2 style={{font:"700 20px Manrope",margin:"8px 0 5px"}}>{isProjects?"Your projects":"Your task queue"}</h2><p className="muted" style={{fontSize:11,margin:0}}>{isProjects?"Real project records stored in your private workspace.":"Tasks linked to projects, priorities and due dates."}</p></div>
    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{!readOnlyPreview && <>{isProjects&&<button type="button" style={secondary} onClick={()=>void importKnownProjects()} disabled={importing}><FolderKanban size={13}/>{importing?"Importing…":"Import known projects"}</button>}<button type="button" style={secondary} onClick={()=>void load()} disabled={loading}><RefreshCw size={13}/> Refresh</button><button type="button" style={primary} onClick={()=>setShowForm(v=>!v)}><Plus size={14}/>{isProjects?"New project":"New task"}</button></>}</div>
   </div>
   {readOnlyPreview && <div className="preview-inline"><strong>READ-ONLY PREVIEW</strong><span>Project and task records are private. Sign in as the owner to load, create or update real records.</span></div>}
@@ -78,8 +78,8 @@ export default function WorkspaceData({ section, readOnlyPreview = false }: { se
   </form>}
   <div className="stats" style={{gridTemplateColumns:"repeat(3,minmax(0,1fr))",marginBottom:16}}>
    <div className="stat"><div className="stat-head">{isProjects?"Projects":"Total tasks"}</div><div className="stat-value">{readOnlyPreview?"—":list.length}</div><div className="stat-foot">{readOnlyPreview?"Owner sign-in required":"Loaded from your account"}</div></div>
-   <div className="stat"><div className="stat-head">In progress</div><div className="stat-value">{isProjects?projects.filter(p=>p.status==="active").length:tasks.filter(t=>t.status==="in_progress").length}</div><div className="stat-foot">Current active work</div></div>
-   <div className="stat"><div className="stat-head">Completed</div><div className="stat-value">{isProjects?projects.filter(p=>p.status==="completed").length:tasks.filter(t=>t.status==="done").length}</div><div className="stat-foot">Recorded as complete</div></div>
+   <div className="stat"><div className="stat-head">In progress</div><div className="stat-value">{readOnlyPreview?"—":isProjects?projects.filter(p=>p.status==="active").length:tasks.filter(t=>t.status==="in_progress").length}</div><div className="stat-foot">Current active work</div></div>
+   <div className="stat"><div className="stat-head">Completed</div><div className="stat-value">{readOnlyPreview?"—":isProjects?projects.filter(p=>p.status==="completed").length:tasks.filter(t=>t.status==="done").length}</div><div className="stat-foot">Recorded as complete</div></div>
   </div>
   <section className="panel">
    <div className="panel-head"><div><div className="panel-title">{isProjects?"Project portfolio":"Execution list"}</div><div className="panel-sub">{readOnlyPreview?"Owner records hidden in public preview":loading?"Loading live records…":list.length+" record"+(list.length===1?"":"s")+" · private to your account"}</div></div><span className="text-link">{isProjects?"PROJECTS":"TASKS"}</span></div>
