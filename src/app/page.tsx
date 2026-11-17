@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowDownRight, ArrowRight, ArrowUpRight, Cpu, FlaskConical, Leaf, Radio, Workflow, Github, Globe2, CircuitBoard, Bot, Sprout } from "lucide-react";
+import { ArrowDownRight, ArrowRight, ArrowUpRight, Cpu, Leaf, Radio, Workflow, CircuitBoard, Bot, Sprout } from "lucide-react";
 
 const projects = [
   { icon: Cpu, number: "01", name: "Personal AI OS", category: "AI · PRODUCTIVITY · AUTOMATION", description: "A private digital command centre that brings projects, knowledge, specialist agents and everyday execution into one connected workspace.", tags: ["AI agents", "Project systems", "Automation"] },
