@@ -1,10 +1,28 @@
 {
+  "id": "/",
   "name": "Bikash Personal OS",
   "short_name": "Bikash OS",
-  "description": "Personal digital workspace",
+  "description": "A private, installable digital workspace for your projects, knowledge and AI team.",
   "start_url": "/workspace",
+  "scope": "/",
   "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
   "background_color": "#090d18",
   "theme_color": "#090d18",
-  "icons": []
+  "categories": [
+    "productivity",
+    "utilities"
+  ],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }
