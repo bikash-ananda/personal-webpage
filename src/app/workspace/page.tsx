@@ -1,64 +1,64 @@
 import Link from "next/link";
+import { Activity, ArrowUpRight, Bot, BookOpen, CheckCircle2, Clock3, Cpu, FolderKanban, Leaf, ListTodo, MessageSquare, Plus, Search, ShieldCheck, Sparkles, Target, Workflow } from "lucide-react";
 import SignOutButton from "@/app/components/SignOutButton";
-import { Home, ListTodo, Search as SearchIcon } from "lucide-react";
-import { Activity, ArrowUpRight, Bell, BookOpen, Bot, BriefcaseBusiness, CheckCircle2, ChevronRight, CircleDot, Clock3, Cpu, FolderKanban, GitBranch, Leaf, MessageSquare, Plus, Search, Settings2, ShieldCheck, Sparkles, Target, Workflow } from "lucide-react";
+import { pool } from "@/lib/auth";
+import { getOwnerContext } from "@/lib/server/owner";
 
-const tasks = [
-  {title:"Define the first Personal OS release boundary",project:"Personal AI OS · Architecture",due:"TODAY",priority:"HIGH"},
-  {title:"Review wildlife platform research content pipeline",project:"Wildlife Management · Product",due:"TODAY",priority:"MEDIUM"},
-  {title:"Prepare greenhouse device connectivity checklist",project:"Digital Agriculture · IoT",due:"TOMORROW",priority:"MEDIUM"},
-];
-const agents = [
-  {icon:Target,name:"Chief of Staff",desc:"Priorities, planning & coordination",state:"READY"},
-  {icon:GitBranch,name:"Engineering",desc:"Code, systems & delivery",state:"READY"},
-  {icon:BookOpen,name:"Research",desc:"Evidence, learning & synthesis",state:"READY"},
-  {icon:BriefcaseBusiness,name:"Business Operations",desc:"Customers, workflows & reports",state:"PLANNED"},
-];
-const navGroups = [
-  {label:"OVERVIEW",items:[["Command centre",Activity],["AI assistant",MessageSquare],["Agents",Bot]]},
-  {label:"WORK",items:[["Projects",FolderKanban],["Tasks",CheckCircle2],["Research",BookOpen],["Knowledge",Sparkles]]},
-  {label:"OPERATIONS",items:[["Automations",Workflow],["Approvals",ShieldCheck],["Activity log",Clock3],["Integrations",Cpu]]},
-] as const;
-const sectionHref: Record<string, string> = { "AI assistant": "assistant", "Agents": "agents", "Projects": "projects", "Tasks": "tasks", "Research": "research", "Knowledge": "knowledge", "Automations": "automations", "Approvals": "approvals", "Activity log": "activity", "Integrations": "integrations" };
-export default function WorkspacePage(){
-  return <div className="shell">
-    <aside className="sidebar">
-      <Link href="/" className="brand"><span className="brand-mark">BB</span><span><span className="brand-name">BIKASH OS</span><span className="brand-sub" style={{display:"block"}}>PERSONAL OPERATING SYSTEM</span></span></Link>
-      {navGroups.map(g=><div key={g.label}><div className="nav-label">{g.label}</div>{g.items.map(([label,Icon])=>{const I=Icon as typeof Activity;return <Link key={label as string} href={label==="Command centre"?"/workspace":`/workspace/${sectionHref[String(label)]}`} className={"nav-link "+(label==="Command centre"?"active":"")}><I size={15}/>{label as string}{label==="Approvals"?<span className="mono" style={{marginLeft:"auto",fontSize:9,color:"#f4c879"}}>0</span>:null}</Link>})}</div>)}
-      <div className="sidebar-bottom"><div className="nav-label">SYSTEM</div><Link className="nav-link" href="/workspace/settings"><Settings2 size={15}/>Settings</Link><div className="profile-chip"><div className="avatar">BB</div><div><div className="profile-name">Bikash Bhattarai</div><div className="profile-role">Owner workspace · Preview</div></div><ChevronRight size={14} style={{marginLeft:"auto",color:"#64738d"}}/></div></div>
-    </aside>
-    <main className="main">
-      <header className="topbar"><div className="crumb">PERSONAL OS <span style={{color:"#4f6079"}}>/</span> COMMAND CENTRE</div><div className="top-actions"><span><span className="status-dot"/>SYSTEM PREVIEW</span><span className="icon-button"><Search size={14}/></span><span className="icon-button"><Bell size={14}/></span></div></header>
-      <div className="content">
-        <div className="welcome"><div><div className="eyebrow">TUESDAY · YOUR OPERATING VIEW</div><h1>Good to have you here, Bikash.</h1><p>Your work, projects and AI team—brought into one place.</p></div><div className="date-chip">17 NOV 2026 · NEPAL TIME</div></div>
-        <section className="stats">
-          <div className="stat"><div className="stat-head">Active projects <span className="stat-icon"><FolderKanban size={14}/></span></div><div className="stat-value">04</div><div className="stat-foot">Across engineering & business</div></div>
-          <div className="stat"><div className="stat-head">Open priorities <span className="stat-icon"><Target size={14}/></span></div><div className="stat-value">08</div><div className="stat-foot"><span className="positive">3 due today</span> · 5 upcoming</div></div>
-          <div className="stat"><div className="stat-head">AI specialists <span className="stat-icon"><Bot size={14}/></span></div><div className="stat-value">10</div><div className="stat-foot">Designed · runtime not connected</div></div>
-          <div className="stat"><div className="stat-head">Pending approvals <span className="stat-icon"><ShieldCheck size={14}/></span></div><div className="stat-value">00</div><div className="stat-foot">No actions awaiting permission</div></div>
-        </section>
-        <div className="dashboard-grid">
-          <div style={{display:"grid",gap:15,alignContent:"start"}}>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Today&apos;s focus</div><div className="panel-sub">One meaningful outcome to move forward</div></div><span className="text-link">DAILY BRIEFING</span></div>
-              <div className="focus-card"><div className="focus-top"><span className="focus-tag">✦ PRIMARY FOCUS</span><span className="mono" style={{fontSize:9,color:"#9bf0c7"}}>IN PROGRESS</span></div><h3>Lay the foundation for a truly unified Personal AI OS</h3><p>Build the product shell first, then establish identity, durable data, the model gateway and safe agent execution. Keep production infrastructure untouched until the staged release is verified.</p><div className="focus-meta"><span>PERSONAL AI OS</span><span>·</span><span>FOUNDATION RELEASE</span></div></div>
-              <div className="panel-head" style={{marginTop:20,marginBottom:5}}><div className="panel-title">Priority queue</div><Link className="text-link" href="/workspace">VIEW ALL <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
-              {tasks.map(t=><div className="task-row" key={t.title}><span className="task-check"/><div><div className="task-name">{t.title}</div><div className="task-meta">{t.project} · {t.due}</div></div><span className="priority">{t.priority}</span></div>)}
-            </section>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Quick actions</div><div className="panel-sub">Common starting points for your day</div></div></div><div className="quick-grid"><Link className="quick-action" href="/workspace/tasks"><Plus size={16}/><strong>New task</strong>Capture an action</Link><Link className="quick-action" href="/workspace/assistant"><MessageSquare size={16}/><strong>Ask assistant</strong>Think something through</Link><Link className="quick-action" href="/workspace/research"><Search size={16}/><strong>Research</strong>Explore a question</Link></div></section>
-          </div>
-          <div style={{display:"grid",gap:15,alignContent:"start"}}>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Your specialist team</div><div className="panel-sub">10 role-based agents · staged activation</div></div><Link href="/workspace/agents" className="text-link">TEAM <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
-              {agents.map(a=>{const I=a.icon;return <div className="agent-row" key={a.name}><span className="agent-icon"><I size={15}/></span><div><div className="agent-name">{a.name}</div><div className="agent-desc">{a.desc}</div></div><span className="agent-state">{a.state}</span></div>})}
-            </section>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Connected workstreams</div><div className="panel-sub">Your active operating landscape</div></div><span className="text-link">4 PROJECTS</span></div>
-              {[["Personal AI OS","Product architecture",Sparkles],["BNB Machinery","Commerce platform",Cpu],["Wildlife Management","Civic technology",Activity],["Digital Agriculture","Greenhouse & IoT",Leaf]].map(([n,d,I])=>{const Icon=I as typeof Activity;return <div className="agent-row" key={n as string}><span className="agent-icon"><Icon size={15}/></span><div><div className="agent-name">{n as string}</div><div className="agent-desc">{d as string}</div></div><CircleDot size={11} color="#9bf0c7" style={{marginLeft:"auto"}}/></div>})}
-            </section>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Recent activity</div><div className="panel-sub">A transparent record of progress</div></div></div><div className="activity"><div className="activity-line"/><div><div className="activity-copy">Product architecture and delivery roadmap established</div><div className="activity-time">TODAY · PERSONAL AI OS</div></div></div><div className="activity"><div className="activity-line"/><div><div className="activity-copy">Integration branch created; main branch preserved</div><div className="activity-time">TODAY · GITHUB</div></div></div><div className="activity"><div className="activity-line"/><div><div className="activity-copy">Legacy project repositories reviewed as reference material</div><div className="activity-time">TODAY · ENGINEERING</div></div></div></section>
-          </div>
-        </div>
-        <div className="footer-note">BIKASH OS · OWNER AUTHENTICATION IMPLEMENTED · DATABASE & EMAIL SETUP REQUIRED</div>
-      </div>
-      <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation"><Link className="active" href="/workspace"><Home/><span>Home</span></Link><Link href="/workspace/projects"><FolderKanban/><span>Projects</span></Link><Link href="/workspace/tasks"><ListTodo/><span>Tasks</span></Link><Link href="/workspace/assistant"><MessageSquare/><span>AI assistant</span></Link><Link href="/workspace/research"><SearchIcon/><span>Research</span></Link></nav>
-    </main>
-  </div>
+type ProjectRow={id:string;name:string;summary:string;status:string;priority:string};
+type TaskRow={id:string;title:string;status:string;priority:string;due_at:string|null;project_name:string|null};
+const navGroups=[{label:"OVERVIEW",items:[["Command centre",Activity,"/workspace"],["AI assistant",MessageSquare,"/workspace/assistant"],["Agents",Bot,"/workspace/agents"]]},{label:"WORK",items:[["Projects",FolderKanban,"/workspace/projects"],["Tasks",CheckCircle2,"/workspace/tasks"],["Research",BookOpen,"/workspace/research"],["Knowledge",Sparkles,"/workspace/knowledge"]]},{label:"OPERATIONS",items:[["Automations",Workflow,"/workspace/automations"],["Approvals",ShieldCheck,"/workspace/approvals"],["Activity log",Clock3,"/workspace/activity"],["Integrations",Cpu,"/workspace/integrations"]]}] as const;
+const specialists=["Chief of Staff","Project & Engineering","Research & Learning","Communications","Business Operations","Computer & Infrastructure","Knowledge & Memory","Voice Companion","Agriculture & IoT","Finance & Administration"];
+export const dynamic="force-dynamic";
+export default async function WorkspacePage(){
+ let projects:ProjectRow[]=[]; let tasks:TaskRow[]=[]; let counts={projects:0,tasks:0,active:0,done:0}; let storageReady=false;
+ const owner=await getOwnerContext();
+ if(owner.ok){
+  try{
+   const [p,t]=await Promise.all([
+    pool.query<ProjectRow>("SELECT id,name,summary,status,priority FROM personal_projects WHERE owner_id=$1 AND archived_at IS NULL ORDER BY updated_at DESC LIMIT 6",[owner.ownerId]),
+    pool.query<TaskRow>("SELECT t.id,t.title,t.status,t.priority,t.due_at,p.name AS project_name FROM personal_tasks t LEFT JOIN personal_projects p ON p.id=t.project_id AND p.owner_id=t.owner_id WHERE t.owner_id=$1 ORDER BY CASE t.status WHEN 'in_progress' THEN 0 WHEN 'todo' THEN 1 WHEN 'blocked' THEN 2 ELSE 3 END,t.due_at ASC NULLS LAST,t.created_at DESC LIMIT 6",[owner.ownerId])
+   ]);
+   projects=p.rows; tasks=t.rows; counts={projects:p.rows.length,tasks:t.rows.length,active:t.rows.filter(x=>x.status==="in_progress").length,done:t.rows.filter(x=>x.status==="done").length}; storageReady=true;
+  }catch{storageReady=false;}
+ }
+ const greeting=new Intl.DateTimeFormat("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"Asia/Kathmandu"}).format(new Date()).toUpperCase();
+ return <div className="shell">
+  <aside className="sidebar">
+   <Link href="/" className="brand"><span className="brand-mark">BB</span><span><span className="brand-name">BIKASH OS</span><span className="brand-sub" style={{display:"block"}}>PERSONAL OPERATING SYSTEM</span></span></Link>
+   {navGroups.map(g=><div key={g.label}><div className="nav-label">{g.label}</div>{g.items.map(([label,Icon,href])=><Link key={label} href={href} className={"nav-link "+(label==="Command centre"?"active":"")}><Icon size={15}/>{label}</Link>)}</div>)}
+   <div className="sidebar-bottom"><div className="nav-label">SYSTEM</div><Link className="nav-link" href="/workspace/settings"><Cpu size={15}/>Settings</Link><SignOutButton/><div className="profile-chip"><div className="avatar">BB</div><div><div className="profile-name">Bikash Bhattarai</div><div className="profile-role">Owner workspace</div></div></div></div>
+  </aside>
+  <main className="main">
+   <header className="topbar"><div className="crumb">PERSONAL OS <span style={{color:"#4f6079"}}>/</span> COMMAND CENTRE</div><div className="top-actions"><span><span className="status-dot"/>{storageReady?"LIVE WORKSPACE DATA":"DATABASE SETUP REQUIRED"}</span><Link className="icon-button" href="/workspace/assistant"><Search size={14}/></Link></div></header>
+   <div className="content">
+    <div className="welcome"><div><div className="eyebrow">{greeting} · NEPAL TIME</div><h1>Your work, in one place.</h1><p>Projects, tasks and your AI specialist team—built around the work you actually do.</p></div><div className="date-chip">BIKASH PERSONAL OS</div></div>
+    {!storageReady&&<div className="panel" style={{marginBottom:16,borderColor:"rgba(244,200,121,.24)",background:"rgba(244,200,121,.045)"}}><div style={{display:"flex",gap:10,alignItems:"flex-start"}}><ShieldCheck size={17} color="#f4c879"/><div><div className="panel-title">Workspace database is not ready yet</div><p className="panel-sub" style={{lineHeight:1.7}}>The dashboard no longer uses sample project counts or fake task activity. Configure the dedicated database, run the Better Auth and Personal OS migrations, then add your real projects.</p><Link href="/workspace/settings" className="text-link">SETUP NOTES <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div></div></div>}
+    <section className="stats">
+     <div className="stat"><div className="stat-head">Your projects <span className="stat-icon"><FolderKanban size={14}/></span></div><div className="stat-value">{storageReady?counts.projects:"—"}</div><div className="stat-foot">Active portfolio records</div></div>
+     <div className="stat"><div className="stat-head">Open tasks <span className="stat-icon"><Target size={14}/></span></div><div className="stat-value">{storageReady?counts.tasks-counts.done:"—"}</div><div className="stat-foot">Tasks not yet completed</div></div>
+     <div className="stat"><div className="stat-head">In progress <span className="stat-icon"><Activity size={14}/></span></div><div className="stat-value">{storageReady?counts.active:"—"}</div><div className="stat-foot">Currently being worked on</div></div>
+     <div className="stat"><div className="stat-head">Completed tasks <span className="stat-icon"><CheckCircle2 size={14}/></span></div><div className="stat-value">{storageReady?counts.done:"—"}</div><div className="stat-foot">Saved completion records</div></div>
+    </section>
+    <div className="dashboard-grid">
+     <div style={{display:"grid",gap:15,alignContent:"start"}}>
+      <section className="panel"><div className="panel-head"><div><div className="panel-title">Your task queue</div><div className="panel-sub">Real tasks from your workspace database</div></div><Link href="/workspace/tasks" className="text-link">ALL TASKS <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
+       {!storageReady||tasks.length===0?<div style={{padding:"22px 8px",textAlign:"center"}}><ListTodo size={22} color="#91baff"/><div className="panel-title" style={{marginTop:9}}>No task records yet</div><p className="panel-sub" style={{lineHeight:1.7}}>Add a task to start tracking priorities and progress.</p><Link href="/workspace/tasks" className="text-link">CREATE A TASK <Plus size={11} style={{display:"inline"}}/></Link></div>:tasks.map(t=><div className="task-row" key={t.id}><span className="task-check"/><div style={{minWidth:0}}><div className="task-name">{t.title}</div><div className="task-meta">{t.project_name||"Unassigned"} · {t.status.replace("_"," ").toUpperCase()}{t.due_at?" · "+new Date(t.due_at).toLocaleDateString("en-US",{timeZone:"Asia/Kathmandu"}):""}</div></div><span className="priority">{t.priority.toUpperCase()}</span></div>)}
+      </section>
+      <section className="panel"><div className="panel-head"><div><div className="panel-title">Project portfolio</div><div className="panel-sub">Software · electronics · hardware · robotics · IoT · business</div></div><Link href="/workspace/projects" className="text-link">ALL PROJECTS <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
+       {!storageReady||projects.length===0?<div style={{padding:"22px 8px",textAlign:"center"}}><FolderKanban size={22} color="#91baff"/><div className="panel-title" style={{marginTop:9}}>Your portfolio starts here</div><p className="panel-sub" style={{lineHeight:1.7}}>Add each real project once, then connect tasks, decisions and agent plans.</p><Link href="/workspace/projects" className="text-link">ADD A PROJECT <Plus size={11} style={{display:"inline"}}/></Link></div>:projects.map(p=><div className="agent-row" key={p.id}><span className="agent-icon"><FolderKanban size={15}/></span><div><div className="agent-name">{p.name}</div><div className="agent-desc">{p.summary||p.status+" · "+p.priority}</div></div><span className="agent-state">{p.status.toUpperCase()}</span></div>)}
+      </section>
+     </div>
+     <div style={{display:"grid",gap:15,alignContent:"start"}}>
+      <section className="panel"><div className="panel-head"><div><div className="panel-title">Specialist agent team</div><div className="panel-sub">10 defined roles · execution runtime not yet active</div></div><Link href="/workspace/agents" className="text-link">TEAM <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
+       {specialists.map((name,i)=><div className="agent-row" key={name}><span className="agent-icon"><Bot size={15}/></span><div><div className="agent-name">{name}</div><div className="agent-desc">{i===0?"Coordinates planning and delegates work":"Dedicated domain specialist"}</div></div><span className="agent-state" style={{color:"#f4c879"}}>DESIGNED</span></div>)}
+      </section>
+      <section className="panel"><div className="panel-head"><div><div className="panel-title">Quick actions</div><div className="panel-sub">Start with a real record</div></div></div><div className="quick-grid" style={{gridTemplateColumns:"repeat(2,1fr)"}}><Link className="quick-action" href="/workspace/projects"><FolderKanban size={16}/><strong>New project</strong>Portfolio record</Link><Link className="quick-action" href="/workspace/tasks"><Plus size={16}/><strong>New task</strong>Capture work</Link><Link className="quick-action" href="/workspace/assistant"><MessageSquare size={16}/><strong>AI planning</strong>Plan-first workflow</Link><Link className="quick-action" href="/workspace/research"><BookOpen size={16}/><strong>Research</strong>Evidence and learning</Link></div></section>
+      <section className="panel"><div className="panel-head"><div><div className="panel-title">Work categories</div><div className="panel-sub">The domains your OS should organise</div></div></div>{[["Software & web platforms",Cpu],["Electronics & embedded systems",Cpu],["Robotics & physical AI",Bot],["Agriculture & greenhouse IoT",Leaf],["Business & operations",Activity]].map(([name,Icon])=>{const I=Icon as typeof Cpu;return <div className="agent-row" key={name as string}><span className="agent-icon"><I size={14}/></span><div className="agent-name">{name as string}</div></div>})}</section>
+     </div>
+    </div>
+    <div className="footer-note">BIKASH PERSONAL OS · PRIVATE OWNER WORKSPACE · AGENT EXECUTION REQUIRES SAFE TOOL PERMISSIONS</div>
+   </div>
+   <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation"><Link className="active" href="/workspace"><Activity/><span>Home</span></Link><Link href="/workspace/projects"><FolderKanban/><span>Projects</span></Link><Link href="/workspace/tasks"><ListTodo/><span>Tasks</span></Link><Link href="/workspace/assistant"><MessageSquare/><span>AI assistant</span></Link><Link href="/workspace/research"><Search/><span>Research</span></Link></nav>
+  </main>
+ </div>;
 }
