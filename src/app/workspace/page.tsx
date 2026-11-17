@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SignOutButton from "@/app/components/SignOutButton";
 import { Home, ListTodo, Search as SearchIcon } from "lucide-react";
 import { Activity, ArrowUpRight, Bell, BookOpen, Bot, BriefcaseBusiness, CheckCircle2, ChevronRight, CircleDot, Clock3, Cpu, FolderKanban, GitBranch, Leaf, MessageSquare, Plus, Search, Settings2, ShieldCheck, Sparkles, Target, Workflow } from "lucide-react";
 
