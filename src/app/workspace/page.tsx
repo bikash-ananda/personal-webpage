@@ -11,7 +11,8 @@ const specialists=["Chief of Staff","Project & Engineering","Research & Learning
 export const dynamic="force-dynamic";
 export default async function WorkspacePage(){
  let projects:ProjectRow[]=[]; let tasks:TaskRow[]=[]; let counts={projects:0,tasks:0,active:0,done:0}; let storageReady=false;
- const owner=await getOwnerContext();\n const isPublicPreview=!owner.ok;
+ const owner=await getOwnerContext();
+ const isPublicPreview=!owner.ok;
  if(owner.ok){
   try{
    const [p,t,summary]=await Promise.all([
