@@ -14,11 +14,12 @@ export default async function WorkspacePage(){
  const owner=await getOwnerContext();
  if(owner.ok){
   try{
-   const [p,t]=await Promise.all([
+   const [p,t,summary]=await Promise.all([
     pool.query<ProjectRow>("SELECT id,name,summary,status,priority FROM personal_projects WHERE owner_id=$1 AND archived_at IS NULL ORDER BY updated_at DESC LIMIT 6",[owner.ownerId]),
-    pool.query<TaskRow>("SELECT t.id,t.title,t.status,t.priority,t.due_at,p.name AS project_name FROM personal_tasks t LEFT JOIN personal_projects p ON p.id=t.project_id AND p.owner_id=t.owner_id WHERE t.owner_id=$1 ORDER BY CASE t.status WHEN 'in_progress' THEN 0 WHEN 'todo' THEN 1 WHEN 'blocked' THEN 2 ELSE 3 END,t.due_at ASC NULLS LAST,t.created_at DESC LIMIT 6",[owner.ownerId])
+    pool.query<TaskRow>("SELECT t.id,t.title,t.status,t.priority,t.due_at,p.name AS project_name FROM personal_tasks t LEFT JOIN personal_projects p ON p.id=t.project_id AND p.owner_id=t.owner_id WHERE t.owner_id=$1 ORDER BY CASE t.status WHEN 'in_progress' THEN 0 WHEN 'todo' THEN 1 WHEN 'blocked' THEN 2 ELSE 3 END,t.due_at ASC NULLS LAST,t.created_at DESC LIMIT 6",[owner.ownerId]),
+    pool.query<{projects:number;tasks:number;active:number;done:number}>("SELECT (SELECT count(*)::int FROM personal_projects WHERE owner_id=$1 AND archived_at IS NULL) AS projects,(SELECT count(*)::int FROM personal_tasks WHERE owner_id=$1) AS tasks,(SELECT count(*)::int FROM personal_tasks WHERE owner_id=$1 AND status='in_progress') AS active,(SELECT count(*)::int FROM personal_tasks WHERE owner_id=$1 AND status='done') AS done",[owner.ownerId])
    ]);
-   projects=p.rows; tasks=t.rows; counts={projects:p.rows.length,tasks:t.rows.length,active:t.rows.filter(x=>x.status==="in_progress").length,done:t.rows.filter(x=>x.status==="done").length}; storageReady=true;
+   projects=p.rows; tasks=t.rows; counts=summary.rows[0]; storageReady=true;
   }catch{storageReady=false;}
  }
  const greeting=new Intl.DateTimeFormat("en-US",{weekday:"long",month:"short",day:"numeric",timeZone:"Asia/Kathmandu"}).format(new Date()).toUpperCase();
