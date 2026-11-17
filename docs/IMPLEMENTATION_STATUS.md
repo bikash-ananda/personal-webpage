@@ -2,6 +2,15 @@
 
 Last updated: 2026-11-17
 
+## Public preview mode (temporary review phase)
+
+- [x] Public portfolio and workspace routes are browseable without signing in so the owner can review the full interface.
+- [x] Workspace dashboard and module pages clearly label public preview mode.
+- [x] Projects, tasks, hardware inventory and AI planning render read-only preview states; no private owner records are exposed in public mode.
+- [x] Existing Projects, Tasks and other write/data APIs continue to require the owner session and same-origin checks.
+- [ ] Before private production use, restore the owner-only workspace layout gate and verify every data/API route remains owner-scoped.
+- [ ] Validate the full preview on desktop and mobile after Vercel deployment.
+
 ## Release 0 — repository and mobile foundation
 
 - [x] Architecture, security boundaries and delivery roadmap documented.
