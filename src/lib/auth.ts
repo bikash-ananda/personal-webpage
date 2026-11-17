@@ -41,6 +41,7 @@ export const auth = betterAuth({
     enabled: true,
     window: 60,
     max: 5,
+    storage: "database",
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
