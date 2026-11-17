@@ -18,7 +18,7 @@ export default function HomePage() {
   return <main className="portfolio">
     <nav className="portfolio-nav">
       <Link href="/" className="portfolio-brand"><span className="portfolio-monogram">BB</span><span><strong>BIKASH BHATTARAI</strong><small>ENGINEERING · SYSTEMS · IDEAS</small></span></Link>
-      <div className="portfolio-nav-links"><a href="#work">Selected work</a><a href="#expertise">Expertise</a><a href="#approach">Approach</a><Link href="/login" className="portfolio-nav-cta">Private workspace <ArrowUpRight size={14}/></Link></div>
+      <div className="portfolio-nav-links"><a href="#work">Selected work</a><a href="#expertise">Expertise</a><a href="#approach">Approach</a><Link href="/workspace" className="portfolio-nav-cta">Explore workspace <ArrowUpRight size={14}/></Link></div>
     </nav>
 
     <section className="portfolio-hero">
@@ -56,6 +56,6 @@ export default function HomePage() {
 
     <section id="approach" className="portfolio-approach"><div className="section-index">04 <span>/</span> HOW I WORK</div><div className="approach-content"><h2>Understand the problem.<br/>Build with purpose.<br/><em>Make it useful.</em></h2><div className="approach-steps"><div><span>01</span><strong>Explore</strong><p>Research the context, understand users and identify what matters.</p></div><div><span>02</span><strong>Engineer</strong><p>Design the system, test assumptions and turn ideas into working products.</p></div><div><span>03</span><strong>Improve</strong><p>Learn from real use, measure outcomes and keep making it better.</p></div></div></div></section>
 
-    <footer className="portfolio-footer"><div className="footer-main"><div><div className="portfolio-kicker"><span/> LET’S BUILD SOMETHING USEFUL</div><h2>Good ideas deserve<br/><em>good engineering.</em></h2></div><Link href="/login" className="portfolio-primary">Enter private workspace <ArrowUpRight size={16}/></Link></div><div className="footer-bottom"><span>© {new Date().getFullYear()} BIKASH BHATTARAI</span><span>BIKASHBHATTARAI.COM.NP</span><span>MADE WITH CURIOSITY · NEPAL</span></div></footer>
+    <footer className="portfolio-footer"><div className="footer-main"><div><div className="portfolio-kicker"><span/> LET’S BUILD SOMETHING USEFUL</div><h2>Good ideas deserve<br/><em>good engineering.</em></h2></div><Link href="/workspace" className="portfolio-primary">Explore the workspace <ArrowUpRight size={16}/></Link></div><div className="footer-bottom"><span>© {new Date().getFullYear()} BIKASH BHATTARAI</span><span>BIKASHBHATTARAI.COM.NP</span><span>MADE WITH CURIOSITY · NEPAL</span></div></footer>
   </main>;
 }
