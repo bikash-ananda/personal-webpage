@@ -105,5 +105,5 @@ export default function HardwareInventory({ readOnlyPreview = false }: { readOnl
    {!bom.length?<div className="muted" style={{padding:20,fontSize:11}}>No BOM items yet. Add components to projects to track requirements and shortages.</div>:bom.map(b=><div className="task-row" key={b.id}><span className="agent-icon"><ClipboardList size={14}/></span><div style={{minWidth:0,flex:1}}><div className="task-name" style={{fontWeight:700}}>{b.project_name} · {b.component_name}</div><div className="task-meta">{b.part_number}{b.reference_designator?" · "+b.reference_designator:""} · Required {Number(b.quantity_required)} {b.unit} · In stock {Number(b.quantity_on_hand)} {b.unit}</div></div><span className="priority" style={{color:Number(b.shortage)>0?"#f4c879":"var(--mint)"}}>{Number(b.shortage)>0?"SHORT "+Number(b.shortage):"AVAILABLE"}</span></div>)}
   </section>
   <p className="muted" style={{fontSize:10,lineHeight:1.7,marginTop:12}}>Inventory, BOM and append-only stock movements are owner-scoped. Purchase orders, suppliers and multi-location stock are planned for a later release.</p>
- </div>;
+ </> }</div>;
 }
