@@ -5,39 +5,45 @@ Last updated: 2026-11-17
 ## Release 0 — repository and mobile foundation
 
 - [x] Architecture, security boundaries and delivery roadmap documented.
-- [x] Work isolated on `integration/bikash-personal-ai-os`; `main` remains untouched.
+- [x] Work isolated on \`integration/bikash-personal-ai-os\`; \`main\` remains untouched.
 - [x] Next.js App Router foundation and public profile landing-page shell.
-- [x] Private workspace command-centre visual shell.
 - [x] Responsive mobile-first design and bottom navigation.
 - [x] PWA manifest, service worker, offline fallback and install prompt scaffold.
 - [x] Service worker excludes private workspace, auth and API paths from caching.
-- [x] GitHub Actions typecheck, lint and production build passed on commit `eb157269` (before the subsequent database/API commits).
+- [x] CI passed for the initial project/task screens and live-data dashboard commits; latest full branch validation is still required after the agent-planner changes.
 
-## Release 1 — owner identity and data foundation
+## Release 1 — owner identity and real work data
 
-- [x] Owner-only email magic-link authentication code for `bikashananda40@gmail.com`.
+- [x] Owner-only email magic-link authentication code for \`bikashananda40@gmail.com\`.
 - [x] Server-side session and owner checks on the private workspace.
-- [x] Sign-out control.
 - [x] PostgreSQL connection configuration and persistent authentication rate-limit storage.
-- [x] Core domain schema migration drafted for projects, tasks, knowledge, agent runs, approvals, integrations and append-only activity events.
-- [x] Owner-scoped Projects and Tasks GET/POST API routes with parameterized SQL and same-origin write checks.
-- [ ] Apply Better Auth migration and domain SQL to a dedicated disposable development database.
-- [ ] Configure SMTP and verify actual email delivery and magic-link login/logout.
-- [ ] Verify API authorization, input validation and cross-owner isolation with integration tests.
-- [ ] Run CI on the latest complete branch revision and fix any issues.
-- [ ] Add automated tests for auth, data APIs and migration behavior.
+- [x] Core domain migration drafted for projects, tasks, knowledge, agent runs, approvals, integrations and append-only activity events.
+- [x] Owner-scoped Projects and Tasks GET/POST APIs with parameterized SQL and same-origin write checks.
+- [x] Owner-scoped project and task status updates.
+- [x] Dashboard sample counts, sample tasks, sample project names and fake activity removed; metrics now query owner records.
+- [x] Projects and Tasks screens now load from owner APIs, create records, and update project/task statuses.
+- [x] Explicit, idempotent import endpoint for five known owner projects (Personal AI OS, BNB Machinery, Nepal Wildlife Management System, Digital Agriculture & Smart Greenhouse, and BEOS). Import happens only after the owner clicks the import control.
+- [x] Ten specialist agent role definitions with scoped capability/tool declarations and autonomy tiers.
+- [x] Model-backed work-planning endpoint records agent runs and returns a proposed task plan; the owner must explicitly approve before tasks are saved.
+- [x] Assistant planner UI supports selecting a specialist, entering a work brief, reviewing proposed tasks and approving task creation.
+- [ ] Apply Better Auth and domain migrations to a dedicated disposable development database.
+- [ ] Configure SMTP and verify actual magic-link email delivery and login/logout.
+- [ ] Configure \`AI_BASE_URL\`, \`AI_MODEL\` and provider key where required; verify hosted and local model providers.
+- [ ] Verify authorization, input validation, cross-owner isolation and partial task-save recovery with integration tests.
 
-## Release 2 — usable workspace modules
+## Release 2 — real specialist execution and engineering operations
 
-- [ ] Connect Projects and Tasks mobile screens to the APIs; implement edit, archive, status changes and due-date workflows.
-- [ ] Persist conversations and add hosted/local model gateway.
-- [ ] Implement durable agent runs, cancellation and action approval enforcement.
-- [ ] Build Knowledge and Research ingestion with provenance, sensitivity and retention controls.
+- [ ] Implement the tool registry and real tool adapters (GitHub, research, browser, local computer, server diagnostics, Google Workspace and IoT gateway).
+- [ ] Enforce agent tool allowlists, risk tiers, approval binding, cancellation and audit logging before consequential execution.
+- [ ] Add task editing, deletion/archive, dependencies, recurring tasks and milestone tracking.
+- [ ] Add electronics component inventory, datasheets, stock levels, bills of materials and project-linked hardware records.
+- [ ] Persist assistant conversations and project knowledge with provenance and retention controls.
+- [ ] Build Research ingestion, citations and learning workflows.
 - [ ] Add session/device management and evaluate passkeys/MFA as a second factor.
 - [ ] Migrate and review public profile content from the legacy site.
 
-## Important truth-in-labeling
+## Truth-in-labeling and deployment gate
 
-The login implementation is code-complete but not operational until a dedicated PostgreSQL database, Better Auth schema, SMTP sender and end-to-end tests are configured. The Projects and Tasks APIs are implemented but depend on the unapplied domain migration. Dashboard counts and specialist-agent status are illustrative preview content, not live data. PWA installation and offline behavior have not yet been validated on a physical Android device.
+The login code is present but is not operational until a dedicated PostgreSQL database, Better Auth schema, SMTP sender and end-to-end tests are configured. Project/task APIs and AI planning depend on the domain migration. AI planning additionally requires a configured hosted or local OpenAI-compatible model endpoint. The ten agents are defined and the planner is model-backed, but specialist tool execution is not yet enabled. PWA installation/offline behavior has not been validated on a physical Android device.
 
-No VPS deployment, DNS, shared Caddy, firewall or unrelated project was changed. Production deployment remains blocked until CI on the latest branch, database backup/restore, security tests and explicit approval.
+No VPS deployment, DNS, shared Caddy, firewall or unrelated project has been changed. Production deployment remains blocked until the latest branch CI passes, database migration and backup/restore are tested, authentication and API security tests pass, and the owner explicitly approves deployment.
