@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS personal_projects (
   UNIQUE(id, owner_id)
 );
 CREATE INDEX IF NOT EXISTS personal_projects_owner_status_idx ON personal_projects(owner_id,status,updated_at DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS personal_projects_owner_name_uq ON personal_projects(owner_id,lower(name));
 
 CREATE TABLE IF NOT EXISTS personal_tasks (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
