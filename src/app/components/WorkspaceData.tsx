@@ -33,7 +33,7 @@ export default function WorkspaceData({ section }: { section: "projects" | "task
    const data=await response.json();
    if(!response.ok) throw new Error(data.error||"Project import failed.");
    await load();
-   setError(data.imported+" known projects imported; "+data.total+" projects now in your portfolio.");
+   setNotice(data.imported+" known projects imported; "+data.total+" projects now in your portfolio.");
   } catch(e) { setError(e instanceof Error?e.message:"Project import failed."); }
   finally { setImporting(false); }
  }
@@ -62,7 +62,8 @@ export default function WorkspaceData({ section }: { section: "projects" | "task
    <div><div className="eyebrow">LIVE OWNER DATA · POSTGRESQL</div><h2 style={{font:"700 20px Manrope",margin:"8px 0 5px"}}>{isProjects?"Your projects":"Your task queue"}</h2><p className="muted" style={{fontSize:11,margin:0}}>{isProjects?"Real project records stored in your private workspace.":"Tasks linked to projects, priorities and due dates."}</p></div>
    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>{isProjects&&<button type="button" style={secondary} onClick={()=>void importKnownProjects()} disabled={importing}><FolderKanban size={13}/>{importing?"Importing…":"Import known projects"}</button>}<button type="button" style={secondary} onClick={()=>void load()} disabled={loading}><RefreshCw size={13}/> Refresh</button><button type="button" style={primary} onClick={()=>setShowForm(v=>!v)}><Plus size={14}/>{isProjects?"New project":"New task"}</button></div>
   </div>
-  {notice && <div role="status" style={{display:"flex",gap:9,alignItems:"center",padding:13,marginBottom:15,border:"1px solid rgba(155,240,199,.22)",borderRadius:10,background:"rgba(155,240,199,.06)",color:"var(--mint)",fontSize:11}}><CheckCircle2 size={15}/>{notice}</div>}\n  {error && <div role="alert" style={{display:"flex",gap:9,alignItems:"center",padding:13,marginBottom:15,border:"1px solid rgba(244,154,154,.25)",borderRadius:10,background:"rgba(244,154,154,.06)",color:"#f49a9a",fontSize:11}}><CircleAlert size={15}/>{error}</div>}
+  {notice && <div role="status" style={{display:"flex",gap:9,alignItems:"center",padding:13,marginBottom:15,border:"1px solid rgba(155,240,199,.22)",borderRadius:10,background:"rgba(155,240,199,.06)",color:"var(--mint)",fontSize:11}}><CheckCircle2 size={15}/>{notice}</div>}
+  {error && <div role="alert" style={{display:"flex",gap:9,alignItems:"center",padding:13,marginBottom:15,border:"1px solid rgba(244,154,154,.25)",borderRadius:10,background:"rgba(244,154,154,.06)",color:"#f49a9a",fontSize:11}}><CircleAlert size={15}/>{error}</div>}
   {showForm && <form onSubmit={submit} className="panel" style={{display:"grid",gap:12,marginBottom:17}}>
    <div className="panel-title">{isProjects?"Create a project":"Capture a task"}</div>
    <label style={{display:"grid",gap:6,fontSize:11,color:"var(--muted)"}}>{isProjects?"Project name":"Task title"}<input style={field} required maxLength={isProjects?180:300} value={isProjects?name:title} onChange={e=>isProjects?setName(e.target.value):setTitle(e.target.value)} placeholder={isProjects?"e.g. Smart Greenhouse Controller":"What needs to be done?"}/></label>
