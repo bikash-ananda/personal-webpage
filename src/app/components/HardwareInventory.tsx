@@ -10,7 +10,7 @@ const field:React.CSSProperties={width:"100%",minHeight:40,padding:"9px 11px",bo
 const btn:React.CSSProperties={display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,minHeight:37,padding:"0 12px",border:0,borderRadius:8,background:"var(--mint)",color:"#092018",fontSize:10,fontWeight:700,cursor:"pointer"};
 const soft:React.CSSProperties={...btn,background:"var(--panel2)",color:"var(--text)",border:"1px solid var(--line)"};
 const categories=["Resistor","Capacitor","Inductor","Diode","Transistor","MOSFET","IC / MCU","Sensor","Connector","Switch","Relay","Power supply","Display","PCB","Motor / Actuator","Wire / Cable","Mechanical","Tool","Other"];
-export default function HardwareInventory(){
+export default function HardwareInventory({ readOnlyPreview = false }: { readOnlyPreview?: boolean }){
  const [components,setComponents]=useState<Component[]>([]),[projects,setProjects]=useState<Project[]>([]),[bom,setBom]=useState<BomItem[]>([]),[movements,setMovements]=useState<Movement[]>([]);
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState("");
  const [showComponent,setShowComponent]=useState(false),[showBom,setShowBom]=useState(false);
@@ -46,7 +46,7 @@ export default function HardwareInventory(){
   catch(e){setError(e instanceof Error?e.message:"BOM save failed.");}finally{setSaving(false);}
  }
  const low=components.filter(c=>Number(c.quantity_on_hand)<=Number(c.minimum_stock)).length;
- return <div style={{maxWidth:1100,marginTop:25}}>
+ return <div style={{maxWidth:1100,marginTop:25}}>{readOnlyPreview ? <section className="panel preview-module"><div className="panel-title">Electronics inventory preview</div><p className="panel-sub">Browse the inventory, stock-control and project BOM interface. Private component records and stock adjustments are hidden until owner sign-in.</p><div className="preview-module-grid"><span>Component catalogue</span><span>Datasheets & MPNs</span><span>Stock level alerts</span><span>Project bill of materials</span><span>Stock movement audit</span></div></section> : <>
   <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:12,flexWrap:"wrap",marginBottom:18}}>
    <div><div className="eyebrow">ENGINEERING / ELECTRONICS LAB</div><h2 style={{font:"700 20px Manrope",margin:"7px 0"}}>Component inventory & project BOM</h2><p className="muted" style={{fontSize:11,margin:0}}>Track parts, datasheets, stock and which projects consume each component.</p></div>
    <div style={{display:"flex",gap:7,flexWrap:"wrap"}}><button style={soft} onClick={()=>void load()} disabled={loading}><RefreshCw size={13}/> Refresh</button><button style={soft} onClick={()=>setShowBom(v=>!v)}><ClipboardList size={13}/> Add to BOM</button><button style={btn} onClick={()=>setShowComponent(v=>!v)}><Plus size={13}/> Add component</button></div>
