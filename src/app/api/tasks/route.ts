@@ -70,3 +70,30 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Task could not be saved. Check the project and database migration." }, { status: 503, headers: noStore });
   }
 }
+
+
+export async function PATCH(request: Request) {
+  if (!hasTrustedMutationOrigin(request)) return NextResponse.json({ error: "Request origin is not allowed." }, { status: 403, headers: noStore });
+  const owner = await getOwnerContext();
+  if (!owner.ok) return NextResponse.json({ error: owner.error }, { status: owner.status, headers: noStore });
+  let body: unknown;
+  try { body = await request.json(); } catch { return NextResponse.json({ error: "A valid JSON request body is required." }, { status: 400, headers: noStore }); }
+  if (!body || typeof body !== "object") return NextResponse.json({ error: "Invalid task update." }, { status: 400, headers: noStore });
+  const input = body as Record<string, unknown>;
+  const id = typeof input.id === "string" ? input.id : "";
+  const status = typeof input.status === "string" ? input.status : "";
+  if (!/^[0-9a-f-]{36}$/i.test(id) || !["todo","in_progress","blocked","done","cancelled"].includes(status)) {
+    return NextResponse.json({ error: "A valid task ID and status are required." }, { status: 400, headers: noStore });
+  }
+  try {
+    const result = await pool.query(
+      \`UPDATE personal_tasks SET status=$3, completed_at=CASE WHEN $3='done' THEN COALESCE(completed_at,now()) ELSE NULL END, updated_at=now()
+       WHERE id=$1 AND owner_id=$2 RETURNING id,title,status,priority,completed_at,updated_at\`,
+      [id,owner.ownerId,status]
+    );
+    if (!result.rowCount) return NextResponse.json({ error: "Task not found." }, { status: 404, headers: noStore });
+    return NextResponse.json({ task: result.rows[0] }, { headers: noStore });
+  } catch {
+    return NextResponse.json({ error: "Task status could not be updated." }, { status: 503, headers: noStore });
+  }
+}
