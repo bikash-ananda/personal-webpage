@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Home, ListTodo, Search as SearchIcon } from "lucide-react";
-import { Activity, ArrowUpRight, Bell, BookOpen, Bot, BriefcaseBusiness, CalendarDays, CheckCircle2, ChevronRight, CircleDot, Clock3, Command, Cpu, FolderKanban, GitBranch, Leaf, MessageSquare, Plus, Search, Settings2, ShieldCheck, Sparkles, Target, Workflow } from "lucide-react";
+import { Activity, ArrowUpRight, Bell, BookOpen, Bot, BriefcaseBusiness, CheckCircle2, ChevronRight, CircleDot, Clock3, Cpu, FolderKanban, GitBranch, Leaf, MessageSquare, Plus, Search, Settings2, ShieldCheck, Sparkles, Target, Workflow } from "lucide-react";
 
 const tasks = [
   {title:"Define the first Personal OS release boundary",project:"Personal AI OS · Architecture",due:"TODAY",priority:"HIGH"},
@@ -17,13 +17,13 @@ const navGroups = [
   {label:"OVERVIEW",items:[["Command centre",Activity],["AI assistant",MessageSquare],["Agents",Bot]]},
   {label:"WORK",items:[["Projects",FolderKanban],["Tasks",CheckCircle2],["Research",BookOpen],["Knowledge",Sparkles]]},
   {label:"OPERATIONS",items:[["Automations",Workflow],["Approvals",ShieldCheck],["Activity log",Clock3],["Integrations",Cpu]]},
- ] as const;
+] as const;
 const sectionHref: Record<string, string> = { "AI assistant": "assistant", "Agents": "agents", "Projects": "projects", "Tasks": "tasks", "Research": "research", "Knowledge": "knowledge", "Automations": "automations", "Approvals": "approvals", "Activity log": "activity", "Integrations": "integrations" };
 export default function WorkspacePage(){
   return <div className="shell">
     <aside className="sidebar">
       <Link href="/" className="brand"><span className="brand-mark">BB</span><span><span className="brand-name">BIKASH OS</span><span className="brand-sub" style={{display:"block"}}>PERSONAL OPERATING SYSTEM</span></span></Link>
-      {navGroups.map(g=><div key={g.label}><div className="nav-label">{g.label}</div>{g.items.map(([label,Icon],i)=>{const I=Icon as typeof Activity;return <Link key={label as string} href={label==="Command centre"?"/workspace":`/workspace/${sectionHref[String(label)]}`} className={"nav-link "+(label==="Command centre"?"active":"")}><I size={15}/>{label as string}{label==="Approvals"?<span className="mono" style={{marginLeft:"auto",fontSize:9,color:"#f4c879"}}>0</span>:null}</Link>})}</div>)}
+      {navGroups.map(g=><div key={g.label}><div className="nav-label">{g.label}</div>{g.items.map(([label,Icon])=>{const I=Icon as typeof Activity;return <Link key={label as string} href={label==="Command centre"?"/workspace":`/workspace/${sectionHref[String(label)]}`} className={"nav-link "+(label==="Command centre"?"active":"")}><I size={15}/>{label as string}{label==="Approvals"?<span className="mono" style={{marginLeft:"auto",fontSize:9,color:"#f4c879"}}>0</span>:null}</Link>})}</div>)}
       <div className="sidebar-bottom"><div className="nav-label">SYSTEM</div><Link className="nav-link" href="/workspace/settings"><Settings2 size={15}/>Settings</Link><div className="profile-chip"><div className="avatar">BB</div><div><div className="profile-name">Bikash Bhattarai</div><div className="profile-role">Owner workspace · Preview</div></div><ChevronRight size={14} style={{marginLeft:"auto",color:"#64738d"}}/></div></div>
     </aside>
     <main className="main">
@@ -38,15 +38,15 @@ export default function WorkspacePage(){
         </section>
         <div className="dashboard-grid">
           <div style={{display:"grid",gap:15,alignContent:"start"}}>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Today's focus</div><div className="panel-sub">One meaningful outcome to move forward</div></div><span className="text-link">DAILY BRIEFING</span></div>
+            <section className="panel"><div className="panel-head"><div><div className="panel-title">Today&apos;s focus</div><div className="panel-sub">One meaningful outcome to move forward</div></div><span className="text-link">DAILY BRIEFING</span></div>
               <div className="focus-card"><div className="focus-top"><span className="focus-tag">✦ PRIMARY FOCUS</span><span className="mono" style={{fontSize:9,color:"#9bf0c7"}}>IN PROGRESS</span></div><h3>Lay the foundation for a truly unified Personal AI OS</h3><p>Build the product shell first, then establish identity, durable data, the model gateway and safe agent execution. Keep production infrastructure untouched until the staged release is verified.</p><div className="focus-meta"><span>PERSONAL AI OS</span><span>·</span><span>FOUNDATION RELEASE</span></div></div>
               <div className="panel-head" style={{marginTop:20,marginBottom:5}}><div className="panel-title">Priority queue</div><Link className="text-link" href="/workspace">VIEW ALL <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
               {tasks.map(t=><div className="task-row" key={t.title}><span className="task-check"/><div><div className="task-name">{t.title}</div><div className="task-meta">{t.project} · {t.due}</div></div><span className="priority">{t.priority}</span></div>)}
             </section>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Quick actions</div><div className="panel-sub">Common starting points for your day</div></div></div><div className="quick-grid"><Link className="quick-action" href="/workspace"><Plus size={16}/><strong>New task</strong>Capture an action</Link><Link className="quick-action" href="/workspace"><MessageSquare size={16}/><strong>Ask assistant</strong>Think something through</Link><Link className="quick-action" href="/workspace"><Search size={16}/><strong>Research</strong>Explore a question</Link></div></section>
+            <section className="panel"><div className="panel-head"><div><div className="panel-title">Quick actions</div><div className="panel-sub">Common starting points for your day</div></div></div><div className="quick-grid"><Link className="quick-action" href="/workspace/tasks"><Plus size={16}/><strong>New task</strong>Capture an action</Link><Link className="quick-action" href="/workspace/assistant"><MessageSquare size={16}/><strong>Ask assistant</strong>Think something through</Link><Link className="quick-action" href="/workspace/research"><Search size={16}/><strong>Research</strong>Explore a question</Link></div></section>
           </div>
           <div style={{display:"grid",gap:15,alignContent:"start"}}>
-            <section className="panel"><div className="panel-head"><div><div className="panel-title">Your specialist team</div><div className="panel-sub">10 role-based agents · staged activation</div></div><Link href="/workspace" className="text-link">TEAM <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
+            <section className="panel"><div className="panel-head"><div><div className="panel-title">Your specialist team</div><div className="panel-sub">10 role-based agents · staged activation</div></div><Link href="/workspace/agents" className="text-link">TEAM <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div>
               {agents.map(a=>{const I=a.icon;return <div className="agent-row" key={a.name}><span className="agent-icon"><I size={15}/></span><div><div className="agent-name">{a.name}</div><div className="agent-desc">{a.desc}</div></div><span className="agent-state">{a.state}</span></div>})}
             </section>
             <section className="panel"><div className="panel-head"><div><div className="panel-title">Connected workstreams</div><div className="panel-sub">Your active operating landscape</div></div><span className="text-link">4 PROJECTS</span></div>
