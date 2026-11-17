@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { ArrowRight, CheckCircle2, LockKeyhole, Mail } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 
 export default function LoginForm() {
@@ -13,30 +14,43 @@ export default function LoginForm() {
     event.preventDefault();
     setPending(true);
     setError("");
-    const result = await authClient.signIn.magicLink({
-      email: email.trim().toLowerCase(),
-      callbackURL: "/workspace",
-    });
-    setPending(false);
-    if (result.error) {
-      setError("We could not send the sign-in link. Check the address or try again later.");
-      return;
+    try {
+      const result = await authClient.signIn.magicLink({
+        email: email.trim().toLowerCase(),
+        callbackURL: "/workspace",
+      });
+      if (result.error) {
+        setError("We could not send the sign-in link. Please check your connection and try again.");
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError("The sign-in service could not be reached. Please try again in a moment.");
+    } finally {
+      setPending(false);
     }
-    setSent(true);
   }
 
   if (sent) {
-    return <div className="login-notice" role="status">
-      <strong>Check your email.</strong>
-      <span>If the address is authorized, a one-time sign-in link has been sent. The link expires in five minutes.</span>
+    return <div className="login-success" role="status" aria-live="polite">
+      <span className="login-success-icon"><CheckCircle2 size={22} /></span>
+      <strong>Check your inbox</strong>
+      <span>If this is the authorized owner address, a secure sign-in link has been sent. It expires in five minutes.</span>
+      <button className="login-resend" type="button" onClick={() => setSent(false)}>Use a different address</button>
     </div>;
   }
 
   return <form className="login-form" onSubmit={submit}>
     <label htmlFor="owner-email">Owner email address</label>
-    <input id="owner-email" type="email" autoComplete="email" required value={email} onChange={(event) => setEmail(event.target.value)} />
+    <div className="login-input-wrap">
+      <Mail size={17} aria-hidden="true" />
+      <input id="owner-email" type="email" autoComplete="email" inputMode="email" autoCapitalize="none" spellCheck={false} required value={email} onChange={(event) => setEmail(event.target.value)} />
+    </div>
     {error ? <p className="login-error" role="alert">{error}</p> : null}
-    <button type="submit" disabled={pending}>{pending ? "Sending secure link…" : "Email me a sign-in link"}</button>
-    <p className="login-hint">Only the authorized owner account can access this workspace. No password is stored in the app.</p>
+    <button type="submit" disabled={pending}>
+      {pending ? "Sending secure link…" : <>Send secure sign-in link <ArrowRight size={16} /></>}
+    </button>
+    <div className="login-security"><LockKeyhole size={14} /><span>Private owner access · One-time link · No password stored</span></div>
+    <p className="login-hint">Only the authorized owner account can access this workspace. The link is single-use and expires after five minutes.</p>
   </form>;
 }
