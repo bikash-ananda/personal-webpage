@@ -16,13 +16,14 @@ const navGroups = [
   {label:"OVERVIEW",items:[["Command centre",Activity],["AI assistant",MessageSquare],["Agents",Bot]]},
   {label:"WORK",items:[["Projects",FolderKanban],["Tasks",CheckCircle2],["Research",BookOpen],["Knowledge",Sparkles]]},
   {label:"OPERATIONS",items:[["Automations",Workflow],["Approvals",ShieldCheck],["Activity log",Clock3],["Integrations",Cpu]]},
-];
+ ] as const;
+const sectionHref: Record<string, string> = { "AI assistant": "assistant", "Agents": "agents", "Projects": "projects", "Tasks": "tasks", "Research": "research", "Knowledge": "knowledge", "Automations": "automations", "Approvals": "approvals", "Activity log": "activity", "Integrations": "integrations" };
 export default function WorkspacePage(){
   return <div className="shell">
     <aside className="sidebar">
       <Link href="/" className="brand"><span className="brand-mark">BB</span><span><span className="brand-name">BIKASH OS</span><span className="brand-sub" style={{display:"block"}}>PERSONAL OPERATING SYSTEM</span></span></Link>
-      {navGroups.map(g=><div key={g.label}><div className="nav-label">{g.label}</div>{g.items.map(([label,Icon],i)=>{const I=Icon as typeof Activity;return <Link key={label as string} href={label==="Command centre"?"/workspace":"/workspace"} className={"nav-link "+(label==="Command centre"?"active":"")}><I size={15}/>{label as string}{label==="Approvals"?<span className="mono" style={{marginLeft:"auto",fontSize:9,color:"#f4c879"}}>0</span>:null}</Link>})}</div>)}
-      <div className="sidebar-bottom"><div className="nav-label">SYSTEM</div><Link className="nav-link" href="/workspace"><Settings2 size={15}/>Settings</Link><div className="profile-chip"><div className="avatar">BB</div><div><div className="profile-name">Bikash Bhattarai</div><div className="profile-role">Owner workspace · Preview</div></div><ChevronRight size={14} style={{marginLeft:"auto",color:"#64738d"}}/></div></div>
+      {navGroups.map(g=><div key={g.label}><div className="nav-label">{g.label}</div>{g.items.map(([label,Icon],i)=>{const I=Icon as typeof Activity;return <Link key={label as string} href={label==="Command centre"?"/workspace":`/workspace/${sectionHref[String(label)]}`} className={"nav-link "+(label==="Command centre"?"active":"")}><I size={15}/>{label as string}{label==="Approvals"?<span className="mono" style={{marginLeft:"auto",fontSize:9,color:"#f4c879"}}>0</span>:null}</Link>})}</div>)}
+      <div className="sidebar-bottom"><div className="nav-label">SYSTEM</div><Link className="nav-link" href="/workspace/settings"><Settings2 size={15}/>Settings</Link><div className="profile-chip"><div className="avatar">BB</div><div><div className="profile-name">Bikash Bhattarai</div><div className="profile-role">Owner workspace · Preview</div></div><ChevronRight size={14} style={{marginLeft:"auto",color:"#64738d"}}/></div></div>
     </aside>
     <main className="main">
       <header className="topbar"><div className="crumb">PERSONAL OS <span style={{color:"#4f6079"}}>/</span> COMMAND CENTRE</div><div className="top-actions"><span><span className="status-dot"/>SYSTEM PREVIEW</span><span className="icon-button"><Search size={14}/></span><span className="icon-button"><Bell size={14}/></span></div></header>
