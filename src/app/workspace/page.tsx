@@ -60,7 +60,4 @@ export default function WorkspacePage(){
       <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation"><Link className="active" href="/workspace"><Home/><span>Home</span></Link><Link href="/workspace/projects"><FolderKanban/><span>Projects</span></Link><Link href="/workspace/tasks"><ListTodo/><span>Tasks</span></Link><Link href="/workspace/assistant"><MessageSquare/><span>AI assistant</span></Link><Link href="/workspace/research"><SearchIcon/><span>Research</span></Link></nav>
     </main>
   </div>
-      </div>
-    </main>
-  </div>
 }
