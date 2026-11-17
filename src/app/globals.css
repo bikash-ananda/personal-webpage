@@ -140,3 +140,15 @@ body{background:radial-gradient(ellipse at 78% -14%,rgba(87,173,185,.18),transpa
  .login-card{padding:31px 24px}
 }
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* Accessible magic-link form refinements */
+.login-input-wrap{position:relative;display:flex;align-items:center}
+.login-input-wrap>svg{position:absolute;left:14px;color:#83a0af;pointer-events:none}
+.login-input-wrap input{padding-left:43px}
+.login-form button{display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .18s ease,filter .18s ease,opacity .18s ease}
+.login-security{display:flex;align-items:center;justify-content:center;gap:8px;color:#9db5a5;font-size:10px;margin-top:8px}
+.login-success{display:grid;justify-items:center;text-align:center;gap:11px;padding:24px 17px;border:1px solid rgba(184,242,123,.22);border-radius:14px;background:rgba(184,242,123,.06)}
+.login-success-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:50%;background:rgba(184,242,123,.12);color:var(--mint)}
+.login-success strong{font:700 17px Manrope;color:var(--text)}
+.login-success>span:not(.login-success-icon){max-width:310px;color:var(--muted);font-size:12px;line-height:1.7}
+.login-resend{border:0;background:transparent;color:var(--blue);font-size:11px;text-decoration:underline;text-underline-offset:3px;cursor:pointer;padding:7px}
