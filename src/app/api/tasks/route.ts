@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { pool } from "@/lib/auth";
-import { getOwnerContext } from "@/lib/server/owner";
+import { getOwnerContext, hasTrustedMutationOrigin } from "@/lib/server/owner";
 
 export const dynamic = "force-dynamic";
 
@@ -29,6 +29,10 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  if (!hasTrustedMutationOrigin(request)) {
+    return NextResponse.json({ error: "Request origin is not allowed." }, { status: 403, headers: noStore });
+  }
+
   const owner = await getOwnerContext();
   if (!owner.ok) return NextResponse.json({ error: owner.error }, { status: owner.status, headers: noStore });
 
