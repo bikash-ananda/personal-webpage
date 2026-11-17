@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Home, ListTodo, Search as SearchIcon } from "lucide-react";
 import { Activity, ArrowUpRight, Bell, BookOpen, Bot, BriefcaseBusiness, CalendarDays, CheckCircle2, ChevronRight, CircleDot, Clock3, Command, Cpu, FolderKanban, GitBranch, Leaf, MessageSquare, Plus, Search, Settings2, ShieldCheck, Sparkles, Target, Workflow } from "lucide-react";
 
 const tasks = [
@@ -55,6 +56,10 @@ export default function WorkspacePage(){
           </div>
         </div>
         <div className="footer-note">BIKASH OS · PRIVATE WORKSPACE PREVIEW · AUTHENTICATION & LIVE DATA NOT YET ENABLED</div>
+      </div>
+      <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation"><Link className="active" href="/workspace"><Home/><span>Home</span></Link><Link href="/workspace/projects"><FolderKanban/><span>Projects</span></Link><Link href="/workspace/tasks"><ListTodo/><span>Tasks</span></Link><Link href="/workspace/assistant"><MessageSquare/><span>AI assistant</span></Link><Link href="/workspace/research"><SearchIcon/><span>Research</span></Link></nav>
+    </main>
+  </div>
       </div>
     </main>
   </div>
