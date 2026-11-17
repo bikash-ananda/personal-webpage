@@ -44,5 +44,5 @@ export default function AssistantPlanner({ readOnlyPreview = false }: { readOnly
    <div style={{display:"flex",justifyContent:"flex-end",marginTop:14}}><button type="button" onClick={()=>void saveTasks()} disabled={saving} style={{display:"inline-flex",alignItems:"center",gap:8,minHeight:41,padding:"0 15px",border:0,borderRadius:9,background:"var(--mint)",color:"#092018",fontWeight:700,fontSize:11}}><ListTodo size={14}/>{saving?"Saving approved tasks…":"Approve & add tasks"}</button></div>
   </section>}
   <p className="muted" style={{fontSize:10,lineHeight:1.7,marginTop:14}}>Safety boundary: the agent can create a plan and execution record. It cannot deploy code, send messages, alter servers or control hardware. Those actions require separate tool integrations and explicit approval policies.</p>
- </div>;
+ </> }</div>;
 }
