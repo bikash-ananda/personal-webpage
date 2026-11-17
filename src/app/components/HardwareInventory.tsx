@@ -4,13 +4,14 @@ import { CircuitBoard, Plus, RefreshCw, Package, AlertTriangle, ClipboardList, E
 
 type Component={id:string;category:string;name:string;manufacturer:string;part_number:string;description:string;package:string;datasheet_url:string|null;quantity_on_hand:string;minimum_stock:string;unit:string;storage_location:string;unit_cost:string|null;currency:string;notes:string;low_stock:boolean};
 type Project={id:string;name:string};
+type Movement={id:string;component_id:string;component_name:string;part_number:string;movement_type:string;quantity_delta:string;reason:string;created_at:string};
 type BomItem={id:string;project_id:string;project_name:string;component_id:string;component_name:string;part_number:string;manufacturer:string;quantity_on_hand:string;unit:string;quantity_required:string;reference_designator:string;notes:string;shortage:string};
 const field:React.CSSProperties={width:"100%",minHeight:40,padding:"9px 11px",border:"1px solid var(--line)",borderRadius:8,background:"#0b1322",color:"var(--text)",font:"12px 'DM Sans',sans-serif"};
 const btn:React.CSSProperties={display:"inline-flex",alignItems:"center",justifyContent:"center",gap:7,minHeight:37,padding:"0 12px",border:0,borderRadius:8,background:"var(--mint)",color:"#092018",fontSize:10,fontWeight:700,cursor:"pointer"};
 const soft:React.CSSProperties={...btn,background:"var(--panel2)",color:"var(--text)",border:"1px solid var(--line)"};
 const categories=["Resistor","Capacitor","Inductor","Diode","Transistor","MOSFET","IC / MCU","Sensor","Connector","Switch","Relay","Power supply","Display","PCB","Motor / Actuator","Wire / Cable","Mechanical","Tool","Other"];
 export default function HardwareInventory(){
- const [components,setComponents]=useState<Component[]>([]),[projects,setProjects]=useState<Project[]>([]),[bom,setBom]=useState<BomItem[]>([]);
+ const [components,setComponents]=useState<Component[]>([]),[projects,setProjects]=useState<Project[]>([]),[bom,setBom]=useState<BomItem[]>([]),[movements,setMovements]=useState<Movement[]>([]);
  const [loading,setLoading]=useState(true),[saving,setSaving]=useState(false),[error,setError]=useState(""),[notice,setNotice]=useState("");
  const [showComponent,setShowComponent]=useState(false),[showBom,setShowBom]=useState(false);
  const [name,setName]=useState(""),[category,setCategory]=useState("IC / MCU"),[manufacturer,setManufacturer]=useState(""),[partNumber,setPartNumber]=useState(""),[pkg,setPkg]=useState(""),[description,setDescription]=useState(""),[datasheet,setDatasheet]=useState(""),[qty,setQty]=useState("1"),[minimum,setMinimum]=useState("1"),[unit,setUnit]=useState("pcs"),[location,setLocation]=useState(""),[cost,setCost]=useState(""),[notes,setNotes]=useState("");
@@ -23,7 +24,7 @@ export default function HardwareInventory(){
    if(!a.ok)throw new Error(ad.error||"Inventory could not be loaded.");
    if(!b.ok)throw new Error(bd.error||"Projects could not be loaded.");
    if(!c.ok)throw new Error(cd.error||"BOM could not be loaded.");
-   setComponents(ad.components||[]);setProjects(bd.projects||[]);setBom(cd.items||[]);
+   setComponents(ad.components||[]);setMovements(ad.movements||[]);setProjects(bd.projects||[]);setBom(cd.items||[]);
   }catch(e){setError(e instanceof Error?e.message:"Hardware workspace unavailable.");}
   finally{setLoading(false);}
  },[]);
@@ -37,7 +38,7 @@ export default function HardwareInventory(){
   }catch(e){setError(e instanceof Error?e.message:"Save failed.");}finally{setSaving(false);}
  }
  async function adjustStock(id:string,delta:number){
-  setError("");try{const r=await fetch("/api/hardware/components",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,delta})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Stock adjustment failed.");await load();}catch(e){setError(e instanceof Error?e.message:"Stock adjustment failed.");}
+  setError("");try{const r=await fetch("/api/hardware/components",{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify({id,delta,reason:delta>0?"Manual stock received":"Manual stock consumed"})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Stock adjustment failed.");await load();}catch(e){setError(e instanceof Error?e.message:"Stock adjustment failed.");}
  }
  async function submitBom(e:FormEvent<HTMLFormElement>){
   e.preventDefault();setSaving(true);setError("");setNotice("");
@@ -95,10 +96,14 @@ export default function HardwareInventory(){
     <div style={{display:"grid",gap:5,justifyItems:"end"}}>{c.low_stock&&<span className="priority" style={{color:"#f4c879"}}><AlertTriangle size={11} style={{display:"inline"}}/> LOW</span>}<div style={{display:"flex",gap:4}}><button type="button" style={{...soft,minHeight:27,padding:"0 8px"}} aria-label={"Remove one "+c.name} onClick={()=>void adjustStock(c.id,-1)}>−</button><button type="button" style={{...soft,minHeight:27,padding:"0 8px"}} aria-label={"Add one "+c.name} onClick={()=>void adjustStock(c.id,1)}>+</button></div></div>
    </div>)}
   </section>
+  <section className="panel" style={{marginBottom:15}}>
+   <div className="panel-head"><div><div className="panel-title">Stock movement history</div><div className="panel-sub">Append-only record of manual stock receipts and consumption</div></div><span className="text-link">AUDIT</span></div>
+   {!movements.length?<div className="muted" style={{padding:16,fontSize:11}}>No stock movements recorded yet.</div>:movements.map(m=><div className="task-row" key={m.id}><span className="agent-icon"><Package size={14}/></span><div style={{minWidth:0,flex:1}}><div className="task-name" style={{fontWeight:700}}>{m.component_name} · {m.part_number}</div><div className="task-meta">{m.reason} · {new Date(m.created_at).toLocaleString()}</div></div><span className="priority" style={{color:Number(m.quantity_delta)>0?"var(--mint)":"#f4c879"}}>{Number(m.quantity_delta)>0?"+":""}{Number(m.quantity_delta)}</span></div>)}
+  </section>
   <section className="panel">
    <div className="panel-head"><div><div className="panel-title"><ClipboardList size={14} style={{display:"inline",verticalAlign:"middle",marginRight:7}}/>Project bill of materials</div><div className="panel-sub">Required quantities compared with current inventory stock</div></div><span className="text-link">BOM</span></div>
    {!bom.length?<div className="muted" style={{padding:20,fontSize:11}}>No BOM items yet. Add components to projects to track requirements and shortages.</div>:bom.map(b=><div className="task-row" key={b.id}><span className="agent-icon"><ClipboardList size={14}/></span><div style={{minWidth:0,flex:1}}><div className="task-name" style={{fontWeight:700}}>{b.project_name} · {b.component_name}</div><div className="task-meta">{b.part_number}{b.reference_designator?" · "+b.reference_designator:""} · Required {Number(b.quantity_required)} {b.unit} · In stock {Number(b.quantity_on_hand)} {b.unit}</div></div><span className="priority" style={{color:Number(b.shortage)>0?"#f4c879":"var(--mint)"}}>{Number(b.shortage)>0?"SHORT "+Number(b.shortage):"AVAILABLE"}</span></div>)}
   </section>
-  <p className="muted" style={{fontSize:10,lineHeight:1.7,marginTop:12}}>Inventory quantities and BOM requirements are owner-scoped. Stock adjustments are recorded as current quantities; purchase orders, suppliers, multi-location stock and transaction history are planned for a later release.</p>
+  <p className="muted" style={{fontSize:10,lineHeight:1.7,marginTop:12}}>Inventory, BOM and append-only stock movements are owner-scoped. Purchase orders, suppliers and multi-location stock are planned for a later release.</p>
  </div>;
 }
