@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 const OWNER_EMAIL = "bikashananda40@gmail.com";
 const BUILD_ONLY_SECRET = "build-only-secret-not-valid-for-authentication";
 
-const pool = new Pool({
+export const pool = new Pool({
   connectionString: process.env.DATABASE_URL ?? "postgres://build:build@127.0.0.1:5432/build",
   max: 10,
   idleTimeoutMillis: 30_000,
