@@ -5,7 +5,7 @@ Last updated: 2026-11-17
 ## Release 0 — repository and mobile foundation
 
 - [x] Architecture, security boundaries and delivery roadmap documented.
-- [x] Work isolated on \`integration/bikash-personal-ai-os\`; \`main\` remains untouched.
+- [x] Work isolated on `integration/bikash-personal-ai-os`; `main` remains untouched.
 - [x] Next.js App Router foundation and public profile landing-page shell.
 - [x] Responsive mobile-first design and bottom navigation.
 - [x] PWA manifest, service worker, offline fallback and install prompt scaffold.
@@ -14,7 +14,7 @@ Last updated: 2026-11-17
 
 ## Release 1 — owner identity and real work data
 
-- [x] Owner-only email magic-link authentication code for \`bikashananda40@gmail.com\`.
+- [x] Owner-only email magic-link authentication code for `bikashananda40@gmail.com`.
 - [x] Server-side session and owner checks on the private workspace.
 - [x] PostgreSQL connection configuration and persistent authentication rate-limit storage.
 - [x] Core domain migration drafted for projects, tasks, knowledge, agent runs, approvals, integrations and append-only activity events.
@@ -26,9 +26,9 @@ Last updated: 2026-11-17
 - [x] Ten specialist agent role definitions with scoped capability/tool declarations and autonomy tiers.
 - [x] Model-backed work-planning endpoint records agent runs and returns a proposed task plan; the owner must explicitly approve before tasks are saved.
 - [x] Assistant planner UI supports selecting a specialist, entering a work brief, reviewing proposed tasks and approving task creation.
-- [ ] Apply Better Auth and domain migrations to a dedicated disposable development database.
+- [ ] Apply Better Auth and domain migrations to a dedicated disposable development database in order: Better Auth schema, `0001_personal_os_core.sql`, then `0002_hardware_inventory_bom.sql`.
 - [ ] Configure SMTP and verify actual magic-link email delivery and login/logout.
-- [ ] Configure \`AI_BASE_URL\`, \`AI_MODEL\` and provider key where required; verify hosted and local model providers.
+- [ ] Configure `AI_BASE_URL`, `AI_MODEL` and provider key where required; verify hosted and local model providers.
 - [ ] Verify authorization, input validation, cross-owner isolation and partial task-save recovery with integration tests.
 
 ## Release 2 — real specialist execution and engineering operations
@@ -36,14 +36,23 @@ Last updated: 2026-11-17
 - [ ] Implement the tool registry and real tool adapters (GitHub, research, browser, local computer, server diagnostics, Google Workspace and IoT gateway).
 - [ ] Enforce agent tool allowlists, risk tiers, approval binding, cancellation and audit logging before consequential execution.
 - [ ] Add task editing, deletion/archive, dependencies, recurring tasks and milestone tracking.
-- [ ] Add electronics component inventory, datasheets, stock levels, bills of materials and project-linked hardware records.
+- [x] Add owner-scoped electronics component inventory, datasheets, stock levels, low-stock indicators, and project-linked bills of materials.
+- [ ] Add purchase orders, suppliers, multi-location stock, and immutable stock transaction history.
 - [ ] Persist assistant conversations and project knowledge with provenance and retention controls.
 - [ ] Build Research ingestion, citations and learning workflows.
 - [ ] Add session/device management and evaluate passkeys/MFA as a second factor.
 - [ ] Migrate and review public profile content from the legacy site.
 
+## Release 2 — hardware and engineering inventory
+
+- [x] Electronics and hardware component catalogue with manufacturer, MPN, category, package, datasheet URL, stock quantity, minimum stock, storage location, unit cost and notes.
+- [x] Owner-scoped stock adjustments that reject negative quantities.
+- [x] Project BOM with component quantities, reference designators and stock-shortage indication.
+- [x] Mobile-friendly hardware workspace at `/workspace/hardware`.
+- [ ] Validate migrations and APIs against a dedicated development PostgreSQL instance; add automated integration tests.
+
 ## Truth-in-labeling and deployment gate
 
-The login code is present but is not operational until a dedicated PostgreSQL database, Better Auth schema, SMTP sender and end-to-end tests are configured. Project/task APIs and AI planning depend on the domain migration. AI planning additionally requires a configured hosted or local OpenAI-compatible model endpoint. The ten agents are defined and the planner is model-backed, but specialist tool execution is not yet enabled. PWA installation/offline behavior has not been validated on a physical Android device.
+The login code is present but is not operational until a dedicated PostgreSQL database, Better Auth schema, SMTP sender and end-to-end tests are configured. Project/task APIs and AI planning depend on migration `0001_personal_os_core.sql`; hardware inventory and BOM depend on `0002_hardware_inventory_bom.sql`. AI planning additionally requires a configured hosted or local OpenAI-compatible model endpoint. The ten agents are defined and the planner is model-backed, but specialist tool execution is not yet enabled. PWA installation/offline behavior has not been validated on a physical Android device.
 
 No VPS deployment, DNS, shared Caddy, firewall or unrelated project has been changed. Production deployment remains blocked until the latest branch CI passes, database migration and backup/restore are tested, authentication and API security tests pass, and the owner explicitly approves deployment.
