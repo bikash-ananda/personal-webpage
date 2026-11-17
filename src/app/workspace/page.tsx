@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Activity, ArrowUpRight, Bot, BookOpen, CheckCircle2, Clock3, Cpu, FolderKanban, Leaf, ListTodo, MessageSquare, Plus, Search, ShieldCheck, Sparkles, Target, Workflow } from "lucide-react";
-import SignOutButton from "@/app/components/SignOutButton";
+
 import { pool } from "@/lib/auth";
 import { getOwnerContext } from "@/lib/server/owner";
 
@@ -27,10 +27,10 @@ export default async function WorkspacePage(){
   <aside className="sidebar">
    <Link href="/" className="brand"><span className="brand-mark">BB</span><span><span className="brand-name">BIKASH OS</span><span className="brand-sub" style={{display:"block"}}>PERSONAL OPERATING SYSTEM</span></span></Link>
    {navGroups.map(g=><div key={g.label}><div className="nav-label">{g.label}</div>{g.items.map(([label,Icon,href])=><Link key={label} href={href} className={"nav-link "+(label==="Command centre"?"active":"")}><Icon size={15}/>{label}</Link>)}</div>)}
-   <div className="sidebar-bottom"><div className="nav-label">SYSTEM</div><Link className="nav-link" href="/workspace/settings"><Cpu size={15}/>Settings</Link><SignOutButton/><div className="profile-chip"><div className="avatar">BB</div><div><div className="profile-name">Bikash Bhattarai</div><div className="profile-role">Owner workspace</div></div></div></div>
+   <div className="sidebar-bottom"><div className="nav-label">SYSTEM</div><Link className="nav-link" href="/workspace/settings"><Cpu size={15}/>Settings</Link><Link className="nav-link" href="/login"><ShieldCheck size={15}/>Owner sign-in</Link><div className="profile-chip"><div className="avatar">BB</div><div><div className="profile-name">Bikash Bhattarai</div><div className="profile-role">Owner workspace</div></div></div></div>
   </aside>
   <main className="main">
-   <header className="topbar"><div className="crumb">PERSONAL OS <span style={{color:"#4f6079"}}>/</span> COMMAND CENTRE</div><div className="top-actions"><span><span className="status-dot"/>{storageReady?"LIVE WORKSPACE DATA":"DATABASE SETUP REQUIRED"}</span><Link className="icon-button" href="/workspace/assistant"><Search size={14}/></Link></div></header>
+   <header className="topbar"><Link href="/" className="crumb"><span aria-hidden="true">←</span> BACK TO PUBLIC SITE <span style={{color:"#4f6079"}}>/</span> COMMAND CENTRE</Link><div className="top-actions"><span><span className="status-dot"/>{storageReady?"LIVE WORKSPACE DATA":"DATABASE SETUP REQUIRED"}</span><Link className="icon-button" href="/workspace/assistant"><Search size={14}/></Link></div></header>
    <div className="content">
     <div className="welcome"><div><div className="eyebrow">{greeting} · NEPAL TIME</div><h1>Your work, in one place.</h1><p>Projects, tasks and your AI specialist team—built around the work you actually do.</p></div><div className="date-chip">BIKASH PERSONAL OS</div></div>
     {!storageReady&&<div className="panel" style={{marginBottom:16,borderColor:"rgba(244,200,121,.24)",background:"rgba(244,200,121,.045)"}}><div style={{display:"flex",gap:10,alignItems:"flex-start"}}><ShieldCheck size={17} color="#f4c879"/><div><div className="panel-title">Workspace database is not ready yet</div><p className="panel-sub" style={{lineHeight:1.7}}>The dashboard no longer uses sample project counts or fake task activity. Configure the dedicated database, run the Better Auth and Personal OS migrations, then add your real projects.</p><Link href="/workspace/settings" className="text-link">SETUP NOTES <ArrowUpRight size={11} style={{display:"inline"}}/></Link></div></div></div>}
@@ -57,7 +57,7 @@ export default async function WorkspacePage(){
       <section className="panel"><div className="panel-head"><div><div className="panel-title">Work categories</div><div className="panel-sub">The domains your OS should organise</div></div></div>{[["Software & web platforms",Cpu],["Electronics & embedded systems",Cpu],["Robotics & physical AI",Bot],["Agriculture & greenhouse IoT",Leaf],["Business & operations",Activity]].map(([name,Icon])=>{const I=Icon as typeof Cpu;return <div className="agent-row" key={name as string}><span className="agent-icon"><I size={14}/></span><div className="agent-name">{name as string}</div></div>})}</section>
      </div>
     </div>
-    <div className="footer-note">BIKASH PERSONAL OS · PRIVATE OWNER WORKSPACE · AGENT EXECUTION REQUIRES SAFE TOOL PERMISSIONS</div>
+    <div className="footer-note">BIKASH PERSONAL OS · PUBLIC INTERFACE PREVIEW · PRIVATE DATA REMAINS OWNER-ONLY</div>
    </div>
    <nav className="mobile-bottom-nav" aria-label="Primary mobile navigation"><Link className="active" href="/workspace"><Activity/><span>Home</span></Link><Link href="/workspace/projects"><FolderKanban/><span>Projects</span></Link><Link href="/workspace/tasks"><ListTodo/><span>Tasks</span></Link><Link href="/workspace/assistant"><MessageSquare/><span>AI assistant</span></Link><Link href="/workspace/research"><Search/><span>Research</span></Link></nav>
   </main>
