@@ -3,7 +3,7 @@ import { FormEvent,useState } from "react";
 import { Bot, CheckCircle2, CircleAlert, ListTodo, Sparkles } from "lucide-react";
 type PlanTask={title:string;description:string;priority:"low"|"medium"|"high"|"critical";due_in_days:number|null};
 const agents=[["chief_of_staff","Chief of Staff"],["engineering","Project & Engineering"],["research","Research & Learning"],["communications","Communications"],["business_ops","Business Operations"],["infrastructure","Computer & Infrastructure"],["knowledge","Knowledge & Memory"],["voice","Voice Companion"],["agriculture_iot","Agriculture & IoT"],["finance_admin","Finance & Administration"]];
-export default function AssistantPlanner(){
+export default function AssistantPlanner({ readOnlyPreview = false }: { readOnlyPreview?: boolean }){
  const [brief,setBrief]=useState(""); const [agentKey,setAgentKey]=useState("chief_of_staff");
  const [tasks,setTasks]=useState<PlanTask[]>([]); const [loading,setLoading]=useState(false); const [saving,setSaving]=useState(false); const [error,setError]=useState(""); const [notice,setNotice]=useState("");
  async function plan(e:FormEvent<HTMLFormElement>){
@@ -29,7 +29,7 @@ export default function AssistantPlanner(){
   }catch(e){setError((e instanceof Error?e.message:"Saving failed.")+" Saved "+saved+" of "+tasks.length+" tasks; review the task queue before retrying.");}
   finally{setSaving(false);}
  }
- return <div style={{maxWidth:850,marginTop:26}}>
+ return <div style={{maxWidth:850,marginTop:26}}>{readOnlyPreview ? <section className="panel preview-module"><div className="panel-title">AI planning preview</div><p className="panel-sub">Explore the specialist planning interface. Model requests and task approvals are disabled in public preview mode and require owner sign-in.</p><div className="preview-module-grid">{agents.slice(0,6).map(([key,name])=><span key={key}>{name}</span>)}</div></section> : <>
   <section className="panel"><div className="panel-head"><div><div className="panel-title">Plan work with your AI team</div><div className="panel-sub">A model-powered specialist proposes tasks; you approve before anything is saved.</div></div><span className="agent-icon"><Bot size={17}/></span></div>
    <form onSubmit={plan} style={{display:"grid",gap:12}}>
     <label style={{display:"grid",gap:6,fontSize:11,color:"var(--muted)"}}>Choose a specialist<select value={agentKey} onChange={e=>setAgentKey(e.target.value)} style={{width:"100%",minHeight:42,padding:"10px 12px",border:"1px solid var(--line)",borderRadius:9,background:"#0b1322",color:"var(--text)"}}>{agents.map(a=><option value={a[0]} key={a[0]}>{a[1]}</option>)}</select></label>
