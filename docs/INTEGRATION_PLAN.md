@@ -1,71 +1,91 @@
-# Personal Website + Bikash AI Integration Plan
+# Integration Strategy — Bikash Personal AI OS
 
-**Target repository:** `bikash-ananda/personal-webpage`  
-**Integration branch:** `integration/bikash-personal-ai-os`  
+**Canonical repository:** `bikash-ananda/personal-webpage`  
+**Development branch:** `integration/bikash-personal-ai-os`  
 **Canonical domain:** `bikashbhattarai.com.np`  
-**Status:** repository review completed; integration implementation not yet started.
+**Product direction:** one unified personal digital workspace.
 
-## Decision
+## Product decision
 
-Keep `personal-webpage` as the canonical repository and integrate the existing `My-assistance` application into it. Do not create another repository. Do not delete or overwrite the existing website files until their content and assets have been migrated and verified.
+The personal website and AI assistant are one product, one repository and one coherent design system. The public website is the public-facing identity layer; the private workspace is the authenticated operating environment.
 
-## Repository findings
+The legacy website is not the architectural foundation. Its content, profile information, project descriptions and selected assets may be extracted. Old page structure, visual patterns, scripts and obsolete hosting assumptions may be discarded. Git history and the untouched main branch preserve rollback/reference value.
 
-### Existing personal website
+The My-assistance repository is a source of product requirements, tested domain logic, security patterns, useful components and implementation knowledge—not a mandate to copy its architecture unchanged. Reuse only after code review and compatibility checks.
 
-The current `personal-webpage` main branch is a small static portfolio (HTML, CSS, JavaScript, profile image, admin/chat-related files and a `.github` directory). The root contains `index.html`, `styles.css`, `script.js`, `profile.jpg.jpg`, `README.txt`, `admin.html`, `admin-icons.html`, `scientific-chatbot.html`, `server-rag.js`, and related files. The current README describes a single-file portfolio and older cPanel-oriented upload steps; deployment configuration must be inspected rather than assumed.
+## Repository study
 
-### Existing My-assistance application
+### personal-webpage
 
-The `My-assistance` main branch contains a more substantial, locally oriented application:
-- Next.js 16 / React 19 / TypeScript web app under `apps/web`.
-- FastAPI service under `services/api`.
-- SQLite persistence, owner authentication, projects, conversations, specialist agent profiles, bounded plans, tasks, reminders, approval-bound local tools, audit records, local CRM, read-only Gmail/Calendar OAuth groundwork, PWA/browser speech, and read-only device telemetry.
-- Isolated Docker Compose starter with web bound to loopback port 3080, internal API/network, and a dedicated named data volume.
-- Operational, architecture, security, model-routing, memory, deployment, and implementation-status documentation.
+The current main branch is a small static portfolio with HTML/CSS/JavaScript, profile assets, admin/chat-related pages and a GitHub workflow. Its legacy cPanel-style README is not an appropriate deployment specification for the target product.
 
-The README and implementation status explicitly state that live model-provider configuration, Google consent, MCP/GitHub/browser integrations, VPS deployment, native desktop speech, and physical device control are not complete. The repository describes locally implemented features; it is not evidence of production deployment.
+### My-assistance
 
-## Target product structure
+The current main branch contains a Next.js 16 / React 19 / TypeScript frontend, FastAPI service, SQLite persistence, owner authentication, projects, conversations, agent profiles, tasks, reminders, approval-bound tools, audit records, CRM, early Gmail/Calendar OAuth groundwork, PWA/browser speech, telemetry groundwork, Docker Compose and architecture/security documentation.
 
-One application and one domain, with public and private areas:
+Its own implementation notes indicate that several integrations and operational capabilities remain incomplete. Existing code is a useful accelerator, not a production-ready complete agent platform.
 
-- `/` — public personal portfolio, biography, experience, skills, projects, research and contact.
-- `/assistant` — authenticated private AI workspace.
-- `/assistant/chat` — conversations and task delegation.
-- `/assistant/agents` — specialist agent directory and controls.
-- `/assistant/projects` — project registry and status.
-- `/assistant/tasks` — tasks, plans and reminders.
-- `/assistant/approvals` — exact-action review and approval.
-- `/assistant/memory` — owner-controlled memory and knowledge.
-- `/assistant/integrations` — explicitly connected accounts and tools.
-- `/assistant/settings` — model, privacy, security and usage settings.
+## Target product
 
-The public portfolio must never expose private assistant data, API routes, prompts, credentials, conversation history or owner-only records.
+### Public website
+- `/`: high-quality personal home page.
+- `/about`: biography, education, experience and capabilities.
+- `/projects`: public project portfolio.
+- `/research`: research and learning.
+- `/writing`: articles and publications.
+- `/contact`: professional contact.
 
-## Integration approach
+### Private workspace
+- `/workspace`: daily command center and briefing.
+- `/workspace/assistant`: conversational and voice interface.
+- `/workspace/agents`: agent directory and control.
+- `/workspace/projects`: project registry and progress.
+- `/workspace/tasks`: tasks, plans and reminders.
+- `/workspace/inbox`: communication triage and drafts.
+- `/workspace/research`: research jobs and sources.
+- `/workspace/knowledge`: files, notes and memory.
+- `/workspace/automations`: schedules and workflows.
+- `/workspace/approvals`: privileged action review.
+- `/workspace/activity`: audit and run history.
+- `/workspace/integrations`: accounts, tools and permissions.
+- `/workspace/settings`: models, privacy and preferences.
 
-1. Preserve the current `main` branch unchanged. Work on `integration/bikash-personal-ai-os`.
-2. Bring the My-assistance application source into this repository, retaining its existing tests, security controls, scripts, and documentation.
-3. Migrate the portfolio content, project descriptions, profile assets, metadata, and useful visual elements into the Next.js public routes. Do not copy obsolete cPanel instructions as active deployment guidance.
-4. Keep the existing FastAPI boundary and local-first data model initially. Do not add LangGraph, Letta, PostgreSQL, Redis, or additional services without a measured requirement; the current implementation deliberately defers them.
-5. Resolve route, build, environment, and deployment conflicts before changing any live service.
-6. Run API tests, frontend typecheck/build, authentication and authorization checks, backup/restore rehearsal, and public/private route checks.
-7. Review a staging deployment before changing DNS or the existing hosting route.
+Public and private surfaces share product identity but must be isolated by server-side authorization, data scopes and API policy.
 
-## Safety and deployment constraints
+## Architecture authority
 
-- No DNS, Caddy, firewall, port, VPS, container, volume, or live-hosting changes are authorized by this integration plan.
-- The user's shared VPS has other active projects and a shared Caddy service. Any future deployment must be isolated, use a read-only host inventory first, and have a rollback plan.
-- Keep the assistant's database, environment variables, model credentials, OAuth tokens, backups, and logs private and out of Git.
-- Default to local-only operation until a provider and network egress are deliberately configured.
-- Read-only actions may run within their approved scopes. External messages, code pushes, production deploys, destructive operations, financial actions, DNS and physical-device control require explicit approval appropriate to their risk.
-- Keep `My-assistance` intact as a source/reference repository during integration. Do not delete or archive it as part of this work.
+The target architecture is specified in:
+- `docs/PRODUCT_ARCHITECTURE.md`
+- `docs/DELIVERY_ROADMAP.md`
 
-## Immediate next implementation tasks
+Those documents supersede any older implementation assumptions in the source repository. In particular, do not assume SQLite, a particular agent framework, or the current FastAPI service boundaries are permanent architecture decisions. Choose the production data and workflow design based on durability, security, backup/restore, local development and operational simplicity.
 
-- Inspect complete file trees, workflows, build commands, and deployment settings in both repositories.
-- Create a verified import plan for the My-assistance source and portfolio assets.
-- Import source into the integration branch without flattening or losing history-bearing reference files.
-- Adapt the portfolio into the Next.js app and add authenticated navigation to the assistant.
-- Reconcile the existing deployment workflow with the new app only after its current target and production routing are confirmed.
+## Integration rules
+
+1. Keep `main` unchanged while building on `integration/bikash-personal-ai-os`.
+2. Do not blindly copy the old website or My-assistance frontend. Build the new product experience against the target architecture.
+3. Extract and verify public profile content and assets; do not migrate private, stale, duplicated or unsafe content.
+4. Review My-assistance backend modules and tests individually. Reuse proven domain logic and tests where they fit; redesign where the target architecture requires it.
+5. Establish reproducible local development, CI, database migrations, secret scanning and security tests before staging.
+6. Do not add providers, OAuth credentials, external integrations or autonomous tools without explicit configuration and least-privilege scopes.
+7. Do not claim integrations are live merely because UI or scaffolding exists.
+
+## Safety and deployment
+
+- No production DNS, Caddy, firewall, shared VPS, container, volume or live-hosting changes during architecture and implementation work.
+- The shared VPS hosts unrelated projects and a shared host-level Caddy service. Any future deployment must be isolated and must not start another Caddy instance or perform host-wide cleanup.
+- Use a dedicated application directory, compose project, network, database, volumes and secrets.
+- Keep credentials, OAuth tokens, database files, backups and logs out of Git.
+- Default-deny tool permissions. External communications, production deployment, destructive actions, financial operations, DNS and physical actuation require explicit, scoped approval.
+- Keep `My-assistance` available as a reference repository until the new implementation has been validated; it does not need to become a runtime dependency.
+
+## Immediate execution order
+
+1. Complete file/workflow/deployment inventory for both repositories.
+2. Confirm exact domain's current hosting/DNS target and deployment workflow without modifying it.
+3. Establish the new app skeleton and design system on the integration branch.
+4. Implement public identity and private workspace shell with authentication boundaries.
+5. Selectively port tested capabilities and build the agent runtime, model gateway, memory and approval system.
+6. Add integrations incrementally, beginning read-only.
+7. Run CI, security, migration and restore tests.
+8. Deploy to isolated staging and obtain acceptance before production cutover.
