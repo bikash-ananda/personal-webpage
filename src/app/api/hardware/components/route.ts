@@ -14,7 +14,8 @@ export async function GET(){
    "SELECT id,category,name,manufacturer,part_number,description,package,datasheet_url,quantity_on_hand,minimum_stock,unit,storage_location,unit_cost,currency,notes,updated_at,(quantity_on_hand<=minimum_stock) AS low_stock FROM hardware_components WHERE owner_id=$1 ORDER BY category,name LIMIT 500",
    [owner.ownerId]
   );
-  return NextResponse.json({components:result.rows},{headers:noStore});
+  const movements=await pool.query("SELECT m.id,m.component_id,c.name AS component_name,c.part_number,m.movement_type,m.quantity_delta,m.reason,m.created_at FROM hardware_stock_movements m JOIN hardware_components c ON c.id=m.component_id AND c.owner_id=m.owner_id WHERE m.owner_id=$1 ORDER BY m.created_at DESC LIMIT 30",[owner.ownerId]);
+  return NextResponse.json({components:result.rows,movements:movements.rows},{headers:noStore});
  }catch{return NextResponse.json({error:"Hardware inventory is unavailable. Apply migration 0002 first."},{status:503,headers:noStore});}
 }
 
@@ -49,7 +50,12 @@ export async function PATCH(request:Request){
  const v=body as Record<string,unknown>,id=typeof v.id==="string"?v.id:"",delta=Number(v.delta);
  if(!/^[0-9a-f-]{36}$/i.test(id)||!Number.isFinite(delta)||delta===0||Math.abs(delta)>1000000)return NextResponse.json({error:"A valid component and non-zero stock adjustment are required."},{status:400,headers:noStore});
  try{
-  const result=await pool.query("UPDATE hardware_components SET quantity_on_hand=quantity_on_hand+$3,updated_at=now() WHERE id=$1 AND owner_id=$2 AND quantity_on_hand+$3>=0 RETURNING id,name,part_number,quantity_on_hand,minimum_stock,unit",( [id,owner.ownerId,delta] ));
+  const reason=typeof v.reason==="string"?v.reason.trim().slice(0,300):"Manual stock adjustment";
+  const movementType=delta>0?"stock_in":"stock_out";
+  const result=await pool.query(
+   "WITH updated AS (UPDATE hardware_components SET quantity_on_hand=quantity_on_hand+$3,updated_at=now() WHERE id=$1 AND owner_id=$2 AND quantity_on_hand+$3>=0 RETURNING id,owner_id,name,part_number,quantity_on_hand,minimum_stock,unit), movement AS (INSERT INTO hardware_stock_movements(owner_id,component_id,movement_type,quantity_delta,reason) SELECT owner_id,id,$4,$3,$5 FROM updated RETURNING id) SELECT updated.*,movement.id AS movement_id FROM updated CROSS JOIN movement",
+   [id,owner.ownerId,delta,movementType,reason||"Manual stock adjustment"]
+  );
   if(!result.rowCount)return NextResponse.json({error:"Component not found or adjustment would make stock negative."},{status:409,headers:noStore});
   return NextResponse.json({component:result.rows[0]},{headers:noStore});
  }catch{return NextResponse.json({error:"Stock could not be adjusted."},{status:503,headers:noStore});}
