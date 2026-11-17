@@ -21,7 +21,8 @@ CREATE TABLE IF NOT EXISTS hardware_components (
   notes text NOT NULL DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  UNIQUE(owner_id, part_number)
+  UNIQUE(owner_id, part_number),
+  UNIQUE(id, owner_id)
 );
 CREATE INDEX IF NOT EXISTS hardware_components_owner_name_idx ON hardware_components(owner_id, name);
 CREATE INDEX IF NOT EXISTS hardware_components_owner_category_idx ON hardware_components(owner_id, category);
