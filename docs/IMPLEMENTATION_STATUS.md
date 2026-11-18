@@ -43,10 +43,12 @@ Last updated: 2026-11-17
 - [x] Ten specialist agent role definitions with scoped capability/tool declarations and autonomy tiers.
 - [x] Model-backed work-planning endpoint records agent runs and returns a proposed task plan; the owner must explicitly approve before tasks are saved.
 - [x] Assistant planner UI supports selecting a specialist, entering a work brief, reviewing proposed tasks and approving task creation.
+- [x] Plan approval now saves the exact server-stored proposal in one PostgreSQL transaction; the client submits only the run ID, and an approval marker prevents replay/duplicate task creation.
+- [x] AI-plan approval and each generated task are recorded in the append-only activity journal.
 - [ ] Apply Better Auth and domain migrations to a dedicated disposable development database in order: Better Auth schema, `0001_personal_os_core.sql`, then `0002_hardware_inventory_bom.sql`, then `0003_hardware_stock_ledger.sql`.
 - [ ] Configure SMTP and verify actual magic-link email delivery and login/logout.
 - [ ] Configure `AI_BASE_URL`, `AI_MODEL` and provider key where required; verify hosted and local model providers.
-- [ ] Verify authorization, input validation, cross-owner isolation and partial task-save recovery with integration tests.
+- [ ] Verify authorization, input validation, cross-owner isolation, atomic plan approval and duplicate-approval rejection with integration tests.
 
 ## Release 2 — real specialist execution and engineering operations
 
@@ -71,6 +73,6 @@ Last updated: 2026-11-17
 
 ## Truth-in-labeling and deployment gate
 
-The login code is present but is not operational until a dedicated PostgreSQL database, Better Auth schema, SMTP sender and end-to-end tests are configured. Project/task APIs and AI planning depend on migration `0001_personal_os_core.sql`; hardware inventory and BOM depend on `0002_hardware_inventory_bom.sql`, and stock movement audit depends on `0003_hardware_stock_ledger.sql`. AI planning additionally requires a configured hosted or local OpenAI-compatible model endpoint. The ten agents are defined and the planner is model-backed, but specialist tool execution is not yet enabled. PWA installation/offline behavior has not been validated on a physical Android device.
+The login code is present but is not operational until a dedicated PostgreSQL database, Better Auth schema, SMTP sender and end-to-end tests are configured. Project/task APIs and AI planning depend on migration `0001_personal_os_core.sql`; hardware inventory and BOM depend on `0002_hardware_inventory_bom.sql`, and stock movement audit depends on `0003_hardware_stock_ledger.sql`. AI planning additionally requires a configured hosted or local OpenAI-compatible model endpoint. The ten agents are defined and the planner is model-backed. Approved task plans are saved atomically and audited; specialist tool execution is not yet enabled. PWA installation/offline behavior has not been validated on a physical Android device.
 
 No VPS deployment, DNS, shared Caddy, firewall or unrelated project has been changed. Production deployment remains blocked until the latest branch CI passes, database migration and backup/restore are tested, authentication and API security tests pass, and the owner explicitly approves deployment.
