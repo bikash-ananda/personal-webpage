@@ -36,3 +36,16 @@ The model cannot grant itself permissions, approve its own actions, choose arbit
 ## Current release boundary
 
 The current AI Planner can generate proposals and, after explicit approval, save the proposed tasks atomically. That approval is not permission to execute external tools. The registry, tool adapters, approval ledger UI, emergency stop and end-to-end tool execution tests remain future work.
+
+
+## First implementation slice — policy boundary
+
+The integration branch now contains `src/lib/agents/runtime.ts`:
+- A typed metadata-only tool catalog for the current specialist capabilities.
+- Every tool is disabled and unimplemented by default; registry presence is not execution permission.
+- Policy checks agent identity, tool existence, the agent's allowlist, enabled state and implementation state.
+- Risk tiers 0–1 may be allowed only for read-only/draft actions; tier 2 returns an approval-required decision; tier 3 returns an explicit-confirmation decision.
+- Canonical SHA-256 action digests bind owner, agent, tool, target and exact JSON arguments. The eventual approval ledger must store and compare this digest and re-evaluate policy immediately before execution.
+- This module does not execute tools, issue approvals, or turn model output into permission.
+
+Next engineering gate: add focused automated tests for canonicalization, allowlist denial, disabled/unimplemented denial, approval digest stability and action mutation before enabling any adapter.
