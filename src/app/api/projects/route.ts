@@ -55,9 +55,18 @@ export async function POST(request: Request) {
 
   try {
     const result = await pool.query(
-      `INSERT INTO personal_projects (owner_id, name, summary, priority)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, name, summary, status, priority, created_at, updated_at`,
+      `WITH created AS (
+         INSERT INTO personal_projects (owner_id, name, summary, priority)
+         VALUES ($1, $2, $3, $4)
+         RETURNING id, name, summary, status, priority, created_at, updated_at
+       ),
+       logged AS (
+         INSERT INTO activity_events (owner_id, actor_type, event_type, resource_type, resource_id, summary, details)
+         SELECT $1, 'owner', 'project.created', 'project', id::text,
+                'Created project: ' || name, jsonb_build_object('priority', priority)
+         FROM created
+       )
+       SELECT * FROM created`,
       [owner.ownerId, name, summary, priority]
     );
     return NextResponse.json({ project: result.rows[0] }, { status: 201, headers: noStore });
