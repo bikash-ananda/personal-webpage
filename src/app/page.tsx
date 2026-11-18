@@ -18,7 +18,7 @@ export default function HomePage() {
   return <main className="portfolio">
     <nav className="portfolio-nav">
       <Link href="/" className="portfolio-brand"><span className="portfolio-monogram">BB</span><span><strong>BIKASH BHATTARAI</strong><small>ENGINEERING · SYSTEMS · IDEAS</small></span></Link>
-      <div className="portfolio-nav-links"><a href="#work">Selected work</a><a href="#expertise">Expertise</a><a href="#approach">Approach</a><Link href="/workspace" className="portfolio-nav-cta">Explore workspace <ArrowUpRight size={14}/></Link></div>
+      <div className="portfolio-nav-links"><Link href="/about">About</Link><Link href="/projects">Projects</Link><Link href="/research">Research</Link><Link href="/writing">Writing</Link><Link href="/contact">Contact</Link><Link href="/workspace" className="portfolio-nav-cta">Explore workspace <ArrowUpRight size={14}/></Link></div>
     </nav>
 
     <section className="portfolio-hero">
