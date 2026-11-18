@@ -48,4 +48,4 @@ The integration branch now contains `src/lib/agents/runtime.ts`:
 - Canonical SHA-256 action digests bind owner, agent, tool, target and exact JSON arguments. The eventual approval ledger must store and compare this digest and re-evaluate policy immediately before execution.
 - This module does not execute tools, issue approvals, or turn model output into permission.
 
-Next engineering gate: add focused automated tests for canonicalization, allowlist denial, disabled/unimplemented denial, approval digest stability and action mutation before enabling any adapter.
+Automated regression tests now cover canonicalization, allowlist denial, disabled-by-default behavior, invalid payloads, tier-two approval decisions and tier-three deployment/actuator confirmation. The CI run must pass before enabling any adapter.
