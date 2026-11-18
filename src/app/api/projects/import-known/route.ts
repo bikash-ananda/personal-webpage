@@ -20,11 +20,21 @@ export async function POST(request: Request) {
   if(!owner.ok) return NextResponse.json({error:owner.error},{status:owner.status,headers:noStore});
   try {
     const result=await pool.query(
-      "INSERT INTO personal_projects(owner_id,name,summary,status,priority,metadata) " +
-      "SELECT $1,v.name,v.summary,'active',v.priority,v.metadata " +
-      "FROM jsonb_to_recordset($2::jsonb) AS v(name text,summary text,priority text,metadata jsonb) " +
-      "WHERE NOT EXISTS(SELECT 1 FROM personal_projects p WHERE p.owner_id=$1 AND lower(p.name)=lower(v.name)) " +
-      "RETURNING id,name,summary,status,priority",
+      `WITH imported AS (
+         INSERT INTO personal_projects(owner_id,name,summary,status,priority,metadata)
+         SELECT $1,v.name,v.summary,'active',v.priority,v.metadata
+         FROM jsonb_to_recordset($2::jsonb) AS v(name text,summary text,priority text,metadata jsonb)
+         WHERE NOT EXISTS(SELECT 1 FROM personal_projects p WHERE p.owner_id=$1 AND lower(p.name)=lower(v.name))
+         RETURNING id,name,summary,status,priority
+       ),
+       logged AS (
+         INSERT INTO activity_events(owner_id,actor_type,event_type,resource_type,resource_id,summary,details)
+         SELECT $1,'owner','project.imported','project',id::text,
+                'Imported project: ' || name,
+                jsonb_build_object('source','known owner project','priority',priority)
+         FROM imported
+       )
+       SELECT * FROM imported`,
       [owner.ownerId,JSON.stringify(knownProjects)]
     );
     const total=await pool.query("SELECT count(*)::int AS count FROM personal_projects WHERE owner_id=$1 AND archived_at IS NULL",[owner.ownerId]);
