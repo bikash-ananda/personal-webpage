@@ -106,7 +106,7 @@ logged AS (
 )
 SELECT id FROM created;
 
-DO $
+DO $$
 DECLARE event_count integer;
 BEGIN
   SELECT count(*) INTO event_count FROM activity_events WHERE owner_id = 'activity-smoke-owner';
