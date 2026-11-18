@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:agent-runtime": "node scripts/test-agent-runtime.mjs"
   },
   "dependencies": {
     "next": "15.5.29",
@@ -28,4 +29,4 @@
     "@types/pg": "8.15.5",
     "@types/nodemailer": "6.4.17"
   }
-}
+}\n
