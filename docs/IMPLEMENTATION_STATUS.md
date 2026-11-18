@@ -36,6 +36,7 @@ Last updated: 2026-11-17
 - [x] Project and task creation/status changes write to the append-only activity journal in the same database statement.
 - [x] Owner-scoped activity API and live activity feed for the workspace Activity module.
 - [x] PostgreSQL CI smoke test covers project/task event writes and rejects event updates/deletes.
+- [x] Known-project import, hardware component creation, stock adjustments and project BOM additions also write activity events.
 - [x] Dashboard sample counts, sample tasks, sample project names and fake activity removed; metrics now query owner records.
 - [x] Projects and Tasks screens now load from owner APIs, create records, and update project/task statuses.
 - [x] Explicit, idempotent import endpoint for five known owner projects (Personal AI OS, BNB Machinery, Nepal Wildlife Management System, Digital Agriculture & Smart Greenhouse, and BEOS). Import happens only after the owner clicks the import control.
