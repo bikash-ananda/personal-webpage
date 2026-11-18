@@ -54,7 +54,7 @@ Last updated: 2026-11-18
 
 ## Release 2 — real specialist execution and engineering operations
 
-- [x] Add a metadata-only, fail-closed tool registry and policy boundary with risk tiers, agent allowlist checks, disabled-by-default adapters and canonical action digests; no tool executor is enabled yet.\n- [ ] Implement and test one read-only adapter at a time (GitHub, research, browser, local computer, server diagnostics, Google Workspace and IoT gateway).
+- [x] Add a metadata-only, fail-closed tool registry and policy boundary with risk tiers, agent allowlist checks, disabled-by-default adapters and canonical action digests; no tool executor is enabled yet.\n- [x] Add automated policy regression coverage for default-deny behavior, agent allowlists, canonical digest stability/mutation, invalid payloads, tier-two approvals and tier-three deployment/actuator confirmation; CI result is pending.\n- [ ] Implement and test one read-only adapter at a time (GitHub, research, browser, local computer, server diagnostics, Google Workspace and IoT gateway).
 - [ ] Enforce agent tool allowlists, risk tiers, approval binding, cancellation and audit logging before consequential execution.
 - [ ] Add task editing, deletion/archive, dependencies, recurring tasks and milestone tracking.
 - [x] Add owner-scoped electronics component inventory, datasheets, stock levels, low-stock indicators, and project-linked bills of materials.
