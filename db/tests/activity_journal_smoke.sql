@@ -56,12 +56,62 @@ logged AS (
 )
 SELECT id FROM updated;
 
-DO $$
+WITH created AS (
+  INSERT INTO hardware_components(owner_id,category,name,part_number,quantity_on_hand,minimum_stock)
+  VALUES ('activity-smoke-owner','IC','Smoke test regulator','CI-REG-001',0,1)
+  RETURNING id,owner_id,name,part_number,category
+),
+logged AS (
+  INSERT INTO activity_events(owner_id,actor_type,event_type,resource_type,resource_id,summary,details)
+  SELECT owner_id,'owner','hardware_component.created','hardware_component',id::text,
+         'Added hardware component: ' || name,
+         jsonb_build_object('part_number',part_number,'category',category)
+  FROM created
+)
+SELECT id FROM created;
+
+WITH updated AS (
+  UPDATE hardware_components SET quantity_on_hand=quantity_on_hand+5
+  WHERE owner_id='activity-smoke-owner' AND part_number='CI-REG-001'
+  RETURNING id,owner_id,name,part_number,quantity_on_hand
+),
+movement AS (
+  INSERT INTO hardware_stock_movements(owner_id,component_id,movement_type,quantity_delta,reason)
+  SELECT owner_id,id,'stock_in',5,'CI stock receipt' FROM updated
+  RETURNING id
+),
+logged AS (
+  INSERT INTO activity_events(owner_id,actor_type,event_type,resource_type,resource_id,summary,details)
+  SELECT updated.owner_id,'owner','hardware.stock_adjusted','hardware_component',updated.id::text,
+         'Adjusted stock: ' || updated.name,
+         jsonb_build_object('delta',5,'movement_type','stock_in','movement_id',movement.id)
+  FROM updated CROSS JOIN movement
+)
+SELECT updated.id FROM updated CROSS JOIN movement;
+
+WITH created AS (
+  INSERT INTO project_bom_items(owner_id,project_id,component_id,quantity_required,reference_designator,notes)
+  SELECT 'activity-smoke-owner',p.id,c.id,2,'U1','CI BOM test'
+  FROM personal_projects p CROSS JOIN hardware_components c
+  WHERE p.owner_id='activity-smoke-owner' AND p.name='Activity smoke project'
+    AND c.owner_id='activity-smoke-owner' AND c.part_number='CI-REG-001'
+  RETURNING id,project_id,component_id,quantity_required,reference_designator
+),
+logged AS (
+  INSERT INTO activity_events(owner_id,actor_type,event_type,resource_type,resource_id,summary,details)
+  SELECT 'activity-smoke-owner','owner','hardware.bom_item_added','project_bom_item',id::text,
+         'Added component to project bill of materials',
+         jsonb_build_object('project_id',project_id,'component_id',component_id,'quantity_required',quantity_required,'reference_designator',reference_designator)
+  FROM created
+)
+SELECT id FROM created;
+
+DO $
 DECLARE event_count integer;
 BEGIN
   SELECT count(*) INTO event_count FROM activity_events WHERE owner_id = 'activity-smoke-owner';
-  IF event_count <> 4 THEN
-    RAISE EXCEPTION 'Expected 4 activity events, received %', event_count;
+  IF event_count <> 7 THEN
+    RAISE EXCEPTION 'Expected 7 activity events, received %', event_count;
   END IF;
 
   BEGIN
