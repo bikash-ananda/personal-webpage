@@ -28,7 +28,21 @@ export async function POST(request:Request){
  if(!/^[0-9a-f-]{36}$/i.test(projectId)||!/^[0-9a-f-]{36}$/i.test(componentId)||!Number.isFinite(quantity)||quantity<=0||quantity>1000000)return NextResponse.json({error:"Select a project and component, and enter a positive required quantity."},{status:400,headers:noStore});
  try{
   const result=await pool.query(
-   "INSERT INTO project_bom_items(owner_id,project_id,component_id,quantity_required,reference_designator,notes) SELECT $1,p.id,c.id,$4,$5,$6 FROM personal_projects p CROSS JOIN hardware_components c WHERE p.id=$2 AND p.owner_id=$1 AND p.archived_at IS NULL AND c.id=$3 AND c.owner_id=$1 RETURNING id,project_id,component_id,quantity_required,reference_designator,notes",
+   `WITH created AS (
+     INSERT INTO project_bom_items(owner_id,project_id,component_id,quantity_required,reference_designator,notes)
+     SELECT $1,p.id,c.id,$4,$5,$6
+     FROM personal_projects p CROSS JOIN hardware_components c
+     WHERE p.id=$2 AND p.owner_id=$1 AND p.archived_at IS NULL AND c.id=$3 AND c.owner_id=$1
+     RETURNING id,project_id,component_id,quantity_required,reference_designator,notes
+   ),
+   logged AS (
+     INSERT INTO activity_events(owner_id,actor_type,event_type,resource_type,resource_id,summary,details)
+     SELECT $1,'owner','hardware.bom_item_added','project_bom_item',id::text,
+            'Added component to project bill of materials',
+            jsonb_build_object('project_id',project_id,'component_id',component_id,'quantity_required',quantity_required,'reference_designator',reference_designator)
+     FROM created
+   )
+   SELECT * FROM created`,
    [owner.ownerId,projectId,componentId,quantity,ref,notes]
   );
   if(!result.rowCount)return NextResponse.json({error:"Project or component was not found in your account."},{status:404,headers:noStore});
