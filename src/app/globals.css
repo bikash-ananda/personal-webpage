@@ -440,3 +440,14 @@ body{background:radial-gradient(ellipse at 78% -14%,rgba(87,173,185,.18),transpa
 .public-page-footer{padding-top:45px}
 @media(max-width:900px){.public-subpage .portfolio-nav-links{gap:10px}.public-subpage .portfolio-nav-links>a:not(.portfolio-nav-cta){font-size:9px}}
 @media(max-width:650px){.public-subpage .portfolio-nav{align-items:flex-start;gap:18px}.public-subpage .portfolio-nav-links{justify-content:flex-end;flex-wrap:wrap;gap:9px 12px}.public-subpage .portfolio-nav-links>a:not(.portfolio-nav-cta){font-size:8px}.public-page-hero{padding-top:70px}.public-back-link{margin-bottom:35px}.public-page-cards{grid-template-columns:1fr;padding-bottom:55px}.public-page-cards .portfolio-project{min-height:0}.public-page-note{padding-bottom:60px}}
+
+
+/* Keep public page navigation available on narrow screens */
+@media(max-width:900px){.portfolio-nav-links{gap:15px}}
+@media(max-width:650px){
+ .portfolio-nav{align-items:flex-start;flex-wrap:wrap;gap:15px}
+ .portfolio-nav-links{width:100%;justify-content:flex-start;flex-wrap:wrap;gap:9px 14px}
+ .portfolio-nav-links>a:not(.portfolio-nav-cta){display:inline-flex;font-size:9px}
+ .portfolio-nav-cta{padding:9px 11px}
+ .public-subpage .portfolio-nav-links{width:100%;justify-content:flex-start}
+}
