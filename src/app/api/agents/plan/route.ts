@@ -9,8 +9,8 @@ const noStore={"Cache-Control":"private, no-store, max-age=0"};
 type ProposedTask={title:string;description:string;priority:"low"|"medium"|"high"|"critical";due_in_days:number|null};
 function parsePlan(content:string):ProposedTask[] {
   const parsed=JSON.parse(content) as {tasks?:unknown};
-  if(!Array.isArray(parsed.tasks)) throw new Error("The model did not return a valid task list.");
-  return parsed.tasks.slice(0,12).map((raw)=>{
+  if(!Array.isArray(parsed.tasks) || parsed.tasks.length < 1 || parsed.tasks.length > 12) throw new Error("The model did not return a valid task list (1 to 12 tasks required).");
+  return parsed.tasks.map((raw)=>{
     if(!raw||typeof raw!=="object") throw new Error("Invalid task in generated plan.");
     const item=raw as Record<string,unknown>;
     const title=typeof item.title==="string"?item.title.trim():"";
