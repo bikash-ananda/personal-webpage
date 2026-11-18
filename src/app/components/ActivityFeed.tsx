@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Activity, AlertCircle, RefreshCw } from "lucide-react";
 
 type ActivityEvent = {
@@ -17,7 +17,7 @@ export default function ActivityFeed() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  async function load() {
+  const load = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -30,9 +30,9 @@ export default function ActivityFeed() {
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
 
-  useEffect(() => { void load(); }, []);
+  useEffect(() => { void load(); }, [load]);
 
   return (
     <section className="panel" style={{ marginTop: 28, maxWidth: 900 }}>
