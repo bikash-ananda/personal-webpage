@@ -60,9 +60,19 @@ export async function POST(request: Request) {
 
   try {
     const result = await pool.query(
-      `INSERT INTO personal_tasks (owner_id, project_id, title, description, priority, due_at)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING id, project_id, title, description, status, priority, due_at, created_at, updated_at`,
+      `WITH created AS (
+         INSERT INTO personal_tasks (owner_id, project_id, title, description, priority, due_at)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         RETURNING id, project_id, title, description, status, priority, due_at, created_at, updated_at
+       ),
+       logged AS (
+         INSERT INTO activity_events (owner_id, actor_type, event_type, resource_type, resource_id, summary, details)
+         SELECT $1, 'owner', 'task.created', 'task', id::text,
+                'Created task: ' || title,
+                jsonb_build_object('priority', priority, 'project_id', project_id)
+         FROM created
+       )
+       SELECT * FROM created`,
       [owner.ownerId, projectId, title, description, priority, dueAt]
     );
     return NextResponse.json({ task: result.rows[0] }, { status: 201, headers: noStore });
@@ -87,8 +97,20 @@ export async function PATCH(request: Request) {
   }
   try {
     const result = await pool.query(
-      `UPDATE personal_tasks SET status=$3, completed_at=CASE WHEN $3='done' THEN COALESCE(completed_at,now()) ELSE NULL END, updated_at=now()
-       WHERE id=$1 AND owner_id=$2 RETURNING id,title,status,priority,completed_at,updated_at`,
+      `WITH updated AS (
+         UPDATE personal_tasks
+         SET status=$3, completed_at=CASE WHEN $3='done' THEN COALESCE(completed_at,now()) ELSE NULL END, updated_at=now()
+         WHERE id=$1 AND owner_id=$2
+         RETURNING id,title,status,priority,completed_at,updated_at
+       ),
+       logged AS (
+         INSERT INTO activity_events (owner_id, actor_type, event_type, resource_type, resource_id, summary, details)
+         SELECT $2, 'owner', 'task.status_changed', 'task', id::text,
+                'Changed task status: ' || title,
+                jsonb_build_object('status', status)
+         FROM updated
+       )
+       SELECT * FROM updated`,
       [id,owner.ownerId,status]
     );
     if (!result.rowCount) return NextResponse.json({ error: "Task not found." }, { status: 404, headers: noStore });
