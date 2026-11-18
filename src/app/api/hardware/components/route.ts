@@ -65,7 +65,23 @@ export async function PATCH(request:Request){
   const reason=typeof v.reason==="string"?v.reason.trim().slice(0,300):"Manual stock adjustment";
   const movementType=delta>0?"stock_in":"stock_out";
   const result=await pool.query(
-   "WITH updated AS (UPDATE hardware_components SET quantity_on_hand=quantity_on_hand+$3,updated_at=now() WHERE id=$1 AND owner_id=$2 AND quantity_on_hand+$3>=0 RETURNING id,owner_id,name,part_number,quantity_on_hand,minimum_stock,unit), movement AS (INSERT INTO hardware_stock_movements(owner_id,component_id,movement_type,quantity_delta,reason) SELECT owner_id,id,$4,$3,$5 FROM updated RETURNING id) SELECT updated.*,movement.id AS movement_id FROM updated CROSS JOIN movement",
+   `WITH updated AS (
+     UPDATE hardware_components SET quantity_on_hand=quantity_on_hand+$3,updated_at=now()
+     WHERE id=$1 AND owner_id=$2 AND quantity_on_hand+$3>=0
+     RETURNING id,owner_id,name,part_number,quantity_on_hand,minimum_stock,unit
+   ),
+   movement AS (
+     INSERT INTO hardware_stock_movements(owner_id,component_id,movement_type,quantity_delta,reason)
+     SELECT owner_id,id,$4,$3,$5 FROM updated RETURNING id
+   ),
+   logged AS (
+     INSERT INTO activity_events(owner_id,actor_type,event_type,resource_type,resource_id,summary,details)
+     SELECT updated.owner_id,'owner','hardware.stock_adjusted','hardware_component',updated.id::text,
+            'Adjusted stock: ' || updated.name,
+            jsonb_build_object('delta',$3,'movement_type',$4,'reason',$5,'movement_id',movement.id)
+     FROM updated CROSS JOIN movement
+   )
+   SELECT updated.*,movement.id AS movement_id FROM updated CROSS JOIN movement`,
    [id,owner.ownerId,delta,movementType,reason||"Manual stock adjustment"]
   );
   if(!result.rowCount)return NextResponse.json({error:"Component not found or adjustment would make stock negative."},{status:409,headers:noStore});
