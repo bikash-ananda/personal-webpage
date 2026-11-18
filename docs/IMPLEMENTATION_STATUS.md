@@ -44,6 +44,7 @@ Last updated: 2026-11-17
 - [x] Model-backed work-planning endpoint records agent runs and returns a proposed task plan; the owner must explicitly approve before tasks are saved.
 - [x] Assistant planner UI supports selecting a specialist, entering a work brief, reviewing proposed tasks and approving task creation.
 - [x] Plan approval now saves the exact server-stored proposal in one PostgreSQL transaction; the client submits only the run ID, and an approval marker prevents replay/duplicate task creation.
+- [x] AI planning requests are rate-limited per owner with a PostgreSQL advisory lock to prevent parallel requests bypassing the hourly cap.
 - [x] AI-plan approval and each generated task are recorded in the append-only activity journal.
 - [ ] Apply Better Auth and domain migrations to a dedicated disposable development database in order: Better Auth schema, `0001_personal_os_core.sql`, then `0002_hardware_inventory_bom.sql`, then `0003_hardware_stock_ledger.sql`.
 - [ ] Configure SMTP and verify actual magic-link email delivery and login/logout.
