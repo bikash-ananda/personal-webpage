@@ -41,8 +41,27 @@ export async function POST(request:Request) {
  if(!base||!model) return NextResponse.json({error:"AI provider is not configured. Set AI_BASE_URL and AI_MODEL in the private server environment; add AI_API_KEY for hosted providers."},{status:503,headers:noStore});
  let runId:string|null=null;
  try{
-  const run=await pool.query("INSERT INTO agent_runs(owner_id,agent_key,task,status,autonomy_tier,input) VALUES($1,$2,$3,'running',0,$4::jsonb) RETURNING id",[owner.ownerId,agent.key,brief,JSON.stringify({brief,agent:agent.name})]);
-  runId=run.rows[0].id as string;
+  const client=await pool.connect();
+  try{
+   await client.query("BEGIN");
+   await client.query("SELECT pg_advisory_xact_lock(hashtext($1))",[owner.ownerId]);
+   const usage=await client.query(
+    "SELECT count(*)::int AS count FROM agent_runs WHERE owner_id=$1 AND created_at>now()-interval '1 hour'",
+    [owner.ownerId]
+   );
+   if(usage.rows[0].count>=10){
+    await client.query("ROLLBACK");
+    return NextResponse.json({error:"Planning limit reached. Try again later."},{status:429,headers:noStore});
+   }
+   const run=await client.query("INSERT INTO agent_runs(owner_id,agent_key,task,status,autonomy_tier,input) VALUES($1,$2,$3,'running',0,$4::jsonb) RETURNING id",[owner.ownerId,agent.key,brief,JSON.stringify({brief,agent:agent.name})]);
+   runId=run.rows[0].id as string;
+   await client.query("COMMIT");
+  }catch(error){
+   await client.query("ROLLBACK").catch(()=>undefined);
+   throw error;
+  }finally{
+   client.release();
+  }
   const system="You are "+agent.name+" for a private Personal AI OS. Mission: "+agent.mission+". Return only JSON with shape {\"tasks\":[{\"title\":\"...\",\"description\":\"...\",\"priority\":\"low|medium|high|critical\",\"due_in_days\":number|null}]}. Create 3 to 8 practical, ordered tasks. Do not claim to execute tools, contact people, modify files or deploy anything. This is a proposal only. Respect the owner's safety and ask for approval for consequential actions.";
   const headers:Record<string,string>={"Content-Type":"application/json"};
   if(apiKey) headers.Authorization="Bearer "+apiKey;
