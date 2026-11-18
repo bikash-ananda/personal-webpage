@@ -91,8 +91,20 @@ export async function PATCH(request: Request) {
   }
   try {
     const result = await pool.query(
-      `UPDATE personal_projects SET status=$3, archived_at=CASE WHEN $3='archived' THEN now() ELSE NULL END, updated_at=now()
-       WHERE id=$1 AND owner_id=$2 RETURNING id,name,status,priority,updated_at`,
+      `WITH updated AS (
+         UPDATE personal_projects
+         SET status=$3, archived_at=CASE WHEN $3='archived' THEN now() ELSE NULL END, updated_at=now()
+         WHERE id=$1 AND owner_id=$2
+         RETURNING id,name,status,priority,updated_at
+       ),
+       logged AS (
+         INSERT INTO activity_events (owner_id, actor_type, event_type, resource_type, resource_id, summary, details)
+         SELECT $2, 'owner', 'project.status_changed', 'project', id::text,
+                'Changed project status: ' || name,
+                jsonb_build_object('status', status)
+         FROM updated
+       )
+       SELECT * FROM updated`,
       [id,owner.ownerId,status]
     );
     if (!result.rowCount) return NextResponse.json({ error: "Project not found." }, { status: 404, headers: noStore });
