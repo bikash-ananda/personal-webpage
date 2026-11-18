@@ -39,7 +39,6 @@ export async function POST(request: Request) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
-
     // Lock the server-stored proposal. The browser sends only its run ID, never task content.
     const runResult = await client.query(
       "SELECT id, status, output FROM agent_runs WHERE id = $1 AND owner_id = $2 FOR UPDATE",
@@ -50,10 +49,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Planning proposal not found." }, { status: 404, headers: noStore });
     }
 
-    const run = runResult.rows[0] as { id: string; status: string; output: { tasks?: unknown } | null };
+    const run = runResult.rows[0] as { id: string; status: string; output: { tasks?: unknown; approved_at?: string } | null };
     if (run.status !== "succeeded" || !run.output || !Array.isArray(run.output.tasks)) {
       await client.query("ROLLBACK");
       return NextResponse.json({ error: "This planning proposal is not available for approval." }, { status: 409, headers: noStore });
+    }
+    if (run.output.approved_at) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "This proposal has already been approved." }, { status: 409, headers: noStore });
     }
 
     const proposed = run.output.tasks as ProposedTask[];
@@ -76,7 +79,6 @@ export async function POST(request: Request) {
       const dueAt = typeof task.due_in_days === "number" && Number.isInteger(task.due_in_days)
         ? new Date(Date.now() + Math.max(0, Math.min(365, task.due_in_days)) * 86_400_000).toISOString()
         : null;
-
       const result = await client.query(
         `INSERT INTO personal_tasks (owner_id, title, description, priority, due_at, source, metadata)
          VALUES ($1, $2, $3, $4, $5, 'agent_plan', jsonb_build_object('agent_run_id', $6::text))
@@ -92,6 +94,10 @@ export async function POST(request: Request) {
       inserted.push(saved);
     }
 
+    await client.query(
+      "UPDATE agent_runs SET output = output || jsonb_build_object('approved_at', now()) WHERE id = $1 AND owner_id = $2",
+      [runId, owner.ownerId]
+    );
     await client.query(
       `INSERT INTO activity_events (owner_id, actor_type, event_type, resource_type, resource_id, summary, details)
        VALUES ($1, 'owner', 'agent.plan.approved', 'agent_run', $2, 'Approved AI work plan', $3::jsonb)`,
