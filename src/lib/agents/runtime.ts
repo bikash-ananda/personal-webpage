@@ -40,10 +40,29 @@ const toolsByKey = new Map(toolRegistry.map((tool) => [tool.key, tool]));
 
 function canonicalJson(value: unknown, depth = 0): string {
   if (depth > 20) throw new Error("Action payload is too deeply nested.");
-  if (value === null || typeof value === "string" || typeof value === "boolean") return JSON.stringify(value);
-  if (typeof value === "number" && Number.isFinite(value)) return JSON.stringify(value);
-  if (Array.isArray(value)) return "[" + value.map((item) => canonicalJson(item, depth + 1)).join(",") + "]";
+  if (value === null || typeof value === "string" || typeof value === "boolean") {
+    const encoded = JSON.stringify(value);
+    if (encoded === undefined) throw new Error("Action payload must contain JSON values only.");
+    return encoded;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    const encoded = JSON.stringify(value);
+    if (encoded === undefined) throw new Error("Action payload must contain finite numbers.");
+    return encoded;
+  }
+  if (Array.isArray(value)) {
+    const items: string[] = [];
+    for (let index = 0; index < value.length; index += 1) {
+      if (!Object.prototype.hasOwnProperty.call(value, index)) throw new Error("Sparse arrays are not valid action payloads.");
+      items.push(canonicalJson(value[index], depth + 1));
+    }
+    return "[" + items.join(",") + "]";
+  }
   if (typeof value === "object") {
+    const prototype = Object.getPrototypeOf(value);
+    if (prototype !== Object.prototype && prototype !== null) {
+      throw new Error("Action payload objects must be plain JSON objects.");
+    }
     const record = value as Record<string, unknown>;
     const keys = Object.keys(record).sort();
     return "{" + keys.map((key) => JSON.stringify(key) + ":" + canonicalJson(record[key], depth + 1)).join(",") + "}";
