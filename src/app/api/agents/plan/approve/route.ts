@@ -41,7 +41,7 @@ export async function POST(request: Request) {
     await client.query("BEGIN");
     // Lock the server-stored proposal. The browser sends only its run ID, never task content.
     const runResult = await client.query(
-      "SELECT id, status, output FROM agent_runs WHERE id = $1 AND owner_id = $2 FOR UPDATE",
+      "SELECT id, status, output, created_at FROM agent_runs WHERE id = $1 AND owner_id = $2 FOR UPDATE",
       [runId, owner.ownerId]
     );
     if (!runResult.rowCount) {
@@ -49,10 +49,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Planning proposal not found." }, { status: 404, headers: noStore });
     }
 
-    const run = runResult.rows[0] as { id: string; status: string; output: { tasks?: unknown; approved_at?: string } | null };
+    const run = runResult.rows[0] as { id: string; status: string; output: { tasks?: unknown; approved_at?: string } | null; created_at: Date | string };
     if (run.status !== "succeeded" || !run.output || !Array.isArray(run.output.tasks)) {
       await client.query("ROLLBACK");
       return NextResponse.json({ error: "This planning proposal is not available for approval." }, { status: 409, headers: noStore });
+    }
+    const createdAt = new Date(run.created_at).getTime();
+    if (!Number.isFinite(createdAt) || Date.now() - createdAt > 30 * 60 * 1000) {
+      await client.query("ROLLBACK");
+      return NextResponse.json({ error: "This proposal has expired. Generate a fresh plan before approving." }, { status: 410, headers: noStore });
     }
     if (run.output.approved_at) {
       await client.query("ROLLBACK");
@@ -108,8 +113,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ saved: inserted.length, tasks: inserted }, { status: 201, headers: noStore });
   } catch (error) {
     await client.query("ROLLBACK").catch(() => undefined);
-    const message = error instanceof Error ? error.message : "The approved plan could not be saved.";
-    return NextResponse.json({ error: message }, { status: 503, headers: noStore });
+    return NextResponse.json({ error: "The approved plan could not be saved. No tasks were committed." }, { status: 503, headers: noStore });
   } finally {
     client.release();
   }
