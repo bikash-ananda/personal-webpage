@@ -35,7 +35,19 @@ export async function POST(request:Request){
  if(!name||!part||!Number.isFinite(qty)||qty<0||!Number.isFinite(min)||min<0||(cost!==null&&(!Number.isFinite(cost)||cost<0)))return NextResponse.json({error:"Name, part number and non-negative stock values are required."},{status:400,headers:noStore});
  try{
   const result=await pool.query(
-   "INSERT INTO hardware_components(owner_id,category,name,manufacturer,part_number,description,package,datasheet_url,quantity_on_hand,minimum_stock,unit,storage_location,unit_cost,currency,notes) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15) RETURNING *",
+   `WITH created AS (
+     INSERT INTO hardware_components(owner_id,category,name,manufacturer,part_number,description,package,datasheet_url,quantity_on_hand,minimum_stock,unit,storage_location,unit_cost,currency,notes)
+     VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+     RETURNING *
+   ),
+   logged AS (
+     INSERT INTO activity_events(owner_id,actor_type,event_type,resource_type,resource_id,summary,details)
+     SELECT $1,'owner','hardware_component.created','hardware_component',id::text,
+            'Added hardware component: ' || name,
+            jsonb_build_object('part_number',part_number,'category',category)
+     FROM created
+   )
+   SELECT * FROM created`,
    [owner.ownerId,category,name,manufacturer,part,description,pkg,datasheet,qty,min,unit,location,cost,str("currency",3).toUpperCase()||"NPR",notes]
   );
   return NextResponse.json({component:result.rows[0]},{status:201,headers:noStore});
