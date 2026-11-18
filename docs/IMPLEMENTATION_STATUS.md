@@ -20,6 +20,7 @@ Last updated: 2026-11-17
 - [x] PWA manifest, service worker, offline fallback and install prompt scaffold.
 - [x] Public About, Projects, Research, Writing and Contact routes with shared responsive page layout.
 - [x] Public navigation connects the portfolio pages and provides a consistent return-to-home path.
+- [x] Workspace module pages now switch from read-only preview to owner controls only when the server confirms the authenticated owner session.
 - [ ] Validate the new public routes on mobile/desktop and resolve any CI/build issues.
 - [x] Service worker excludes private workspace, auth and API paths from caching.
 - [x] CI passed for the initial project/task screens and live-data dashboard commits; latest full branch validation is still required after the agent-planner changes.
