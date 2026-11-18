@@ -67,3 +67,7 @@ jobs:
         env:
           PGPASSWORD: personal_os_test
         run: psql -h 127.0.0.1 -U personal_os_test -d personal_os_test -v ON_ERROR_STOP=1 -f db/migrations/0003_hardware_stock_ledger.sql
+      - name: Smoke-test project/task activity journal and append-only guard
+        env:
+          PGPASSWORD: personal_os_test
+        run: psql -h 127.0.0.1 -U personal_os_test -d personal_os_test -v ON_ERROR_STOP=1 -f db/tests/activity_journal_smoke.sql
