@@ -1,6 +1,6 @@
 # Agent runtime integration plan
 
-Status: design review only. No operating-system, browser, email, server, or IoT tool is executable yet.
+Status: staged implementation. Three owner-scoped read-only adapters (projects, tasks, and the fixed GitHub repository) now have an authenticated execution route and durable agent-run records. OS, browser, email, server, and IoT tools remain non-executable.
 
 ## Reuse decisions from the legacy My-assistance repository
 
@@ -35,7 +35,7 @@ The model cannot grant itself permissions, approve its own actions, choose arbit
 
 ## Current release boundary
 
-The current AI Planner can generate proposals and, after explicit approval, save the proposed tasks atomically. That approval is not permission to execute external tools. The registry, tool adapters, approval ledger UI, emergency stop and end-to-end tool execution tests remain future work.
+The current AI Planner can generate proposals and, after explicit approval, save the proposed tasks atomically. That approval is not permission to execute external tools. The first bounded read-only adapters are now implemented in `src/app/api/agents/tools/execute/route.ts`. The Specialist Agents console exposes them only to the authenticated owner; each invocation is stored in `agent_runs`. The project/task adapters are owner-scoped SQL reads; GitHub is pinned to `bikash-ananda/personal-webpage` and read-only. The runtime policy enables only these three adapters. All other registry entries remain disabled and unimplemented. Approval ledger UI, emergency stop, comprehensive executor integration tests and the remaining specialist adapters are still future work.
 
 
 ## First implementation slice — policy boundary
@@ -59,3 +59,13 @@ Automated regression tests now cover canonicalization, allowlist denial, disable
 - This is a routing/configuration layer, not a guarantee that a provider's free quota is unlimited. Keep billing disabled with providers and monitor their quotas. No paid fallback is implemented.
 - Planner requests now use this gateway and record the selected provider/model in the run response.
 - Tests cover local-only defaults, external opt-in, configured ordering and explicit custom endpoint opt-in.
+
+
+## First executable slice — owner-scoped read-only tools
+
+- `project_read`: reads up to 50 active owner projects.
+- `task_read`: reads up to 50 owner tasks with project names.
+- `github_read`: reads repository metadata and the five latest commits from the fixed `bikash-ananda/personal-webpage` repository; optional token is read-only and never returned.
+- `POST /api/agents/tools/execute` checks trusted origin, owner session, agent identity, declared tool allowlist, enabled/implemented state and risk policy. Tool arguments must be an empty JSON object; targets are selected server-side and cannot be supplied by the model or browser.
+- Each run is persisted as `running` then `succeeded` or `failed` in `agent_runs`, with a per-owner hourly cap.
+- No shell, filesystem write, GitHub mutation, email, production deployment or actuator adapter is enabled by this slice.
