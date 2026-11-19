@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 const noStore = { "Cache-Control": "private, no-store, max-age=0" };
 const GITHUB_REPOSITORY = "bikash-ananda/personal-webpage";
 
-type ToolKey = "project_read" | "task_read" | "github_read";
+type ToolKey = "project_read" | "task_read" | "github_read" | "knowledge_read";
 
 function isEmptyRecord(value: unknown): value is Record<string, never> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value)
@@ -17,7 +17,7 @@ function isEmptyRecord(value: unknown): value is Record<string, never> {
 }
 
 async function executeReadOnlyTool(toolKey: ToolKey, ownerId: string) {
-  if (toolKey === "project_read") {
+  if (toolKey === "knowledge_read") {\n    const result = await pool.query(\n      `SELECT id, project_id, title, body, content_type, source_uri, sensitivity, provenance, tags, created_at, updated_at\n       FROM personal_knowledge WHERE owner_id=$1 AND deleted_at IS NULL\n       ORDER BY updated_at DESC LIMIT 100`,\n      [ownerId]\n    );\n    return { count: result.rowCount ?? 0, records: result.rows };\n  }\n\n  if (toolKey === "project_read") {
     const result = await pool.query(
       `SELECT id, name, summary, status, priority, updated_at
        FROM personal_projects
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
   const agentKey = typeof input.agentKey === "string" ? input.agentKey : "";
   const toolKey = typeof input.toolKey === "string" ? input.toolKey : "";
   const agent = getAgent(agentKey);
-  if (!agent || !["project_read", "task_read", "github_read"].includes(toolKey) || !isEmptyRecord(input.args)) {
+  if (!agent || !["project_read", "task_read", "github_read", "knowledge_read"].includes(toolKey) || !isEmptyRecord(input.args)) {
     return NextResponse.json({ error: "Unknown agent/tool or invalid arguments. Read tools currently accept an empty argument object only." }, { status: 400, headers: noStore });
   }
 
