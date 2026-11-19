@@ -33,6 +33,10 @@ export async function POST(request: Request) {
       await client.query("ROLLBACK");
       return NextResponse.json({ error: "Draft creation limit reached. Try again later." }, { status: 429, headers: noStore });
     }
+    const run = await client.query(
+      "INSERT INTO agent_runs(owner_id,agent_key,task,status,autonomy_tier,input) VALUES($1,$2,$3,'running',1,$4::jsonb) RETURNING id",
+      [owner.ownerId, agentKey, "Save unsent communication draft: " + title, JSON.stringify({ title, sideEffect: "private_unsent_draft" })]
+    );
     const inserted = await client.query(
       `INSERT INTO personal_knowledge(owner_id,title,body,content_type,sensitivity,provenance,tags)
        VALUES($1,$2,$3,'conversation','private',$4::jsonb,ARRAY['communication','draft'])
@@ -40,11 +44,15 @@ export async function POST(request: Request) {
       [owner.ownerId, title, content, JSON.stringify({ kind: "unsent_communication_draft", status: "unsent", agent_key: agentKey })]
     );
     await client.query(
+      "UPDATE agent_runs SET status='succeeded',output=$2::jsonb,finished_at=now() WHERE id=$1 AND owner_id=$3",
+      [run.rows[0].id, JSON.stringify({ draftId: inserted.rows[0].id, sent: false }), owner.ownerId]
+    );
+    await client.query(
       "INSERT INTO activity_events(owner_id,actor_type,actor_id,event_type,resource_type,resource_id,summary,details) VALUES($1,'agent',$2,'communication.draft_saved','knowledge',$3,$4,$5::jsonb)",
-      [owner.ownerId, agentKey, inserted.rows[0].id, "Saved unsent communication draft: " + title, JSON.stringify({ status: "unsent" })]
+      [owner.ownerId, agentKey, inserted.rows[0].id, "Saved unsent communication draft: " + title, JSON.stringify({ status: "unsent", agent_run_id: run.rows[0].id })]
     );
     await client.query("COMMIT");
-    return NextResponse.json({ saved: true, sent: false, draft: inserted.rows[0] }, { status: 201, headers: noStore });
+    return NextResponse.json({ saved: true, sent: false, runId: run.rows[0].id, draft: inserted.rows[0] }, { status: 201, headers: noStore });
   } catch {
     await client.query("ROLLBACK").catch(() => undefined);
     return NextResponse.json({ error: "Communication draft could not be saved." }, { status: 503, headers: noStore });
