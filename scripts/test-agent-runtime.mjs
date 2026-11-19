@@ -67,7 +67,7 @@ assert.deepEqual(
   "Chief of Staff must not gain GitHub access outside its declared tool allowlist",
 );
 assert.deepEqual(
-  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "chief_of_staff", toolKey: "server_deploy", target: "production", args: {} }),
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "infrastructure", toolKey: "server_deploy", target: "production", args: {} }),
   { outcome: "deny", reason: "disabled" },
   "high-risk tools must remain disabled until a dedicated approval and execution path exists",
 );
