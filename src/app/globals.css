@@ -451,3 +451,76 @@ body{background:radial-gradient(ellipse at 78% -14%,rgba(87,173,185,.18),transpa
  .portfolio-nav-cta{padding:9px 11px}
  .public-subpage .portfolio-nav-links{width:100%;justify-content:flex-start}
 }
+
+/* =========================================================
+   PERSONAL OS — atmospheric interface layer
+   Lightweight CSS-only motion; no new runtime dependencies.
+   ========================================================= */
+.shell{
+ position:relative;isolation:isolate;
+ background:
+  radial-gradient(ellipse at 78% 3%,rgba(20,190,190,.095),transparent 34%),
+  radial-gradient(ellipse at 16% 42%,rgba(37,105,185,.075),transparent 38%),
+  #071321;
+}
+.shell:before{
+ content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.19;
+ background-image:linear-gradient(rgba(105,183,205,.075) 1px,transparent 1px),linear-gradient(90deg,rgba(105,183,205,.075) 1px,transparent 1px);
+ background-size:44px 44px;
+ mask-image:linear-gradient(to bottom,black,transparent 88%);
+}
+.shell:after{
+ content:"";position:fixed;inset:0;z-index:8;pointer-events:none;opacity:.12;
+ background:repeating-linear-gradient(to bottom,transparent 0,transparent 3px,rgba(135,220,225,.08) 4px);
+ mix-blend-mode:screen;
+}
+.shell .sidebar{background:rgba(5,16,29,.86);border-right-color:rgba(99,242,220,.15);box-shadow:12px 0 45px rgba(0,0,0,.12)}
+.shell .brand-mark{box-shadow:0 0 22px rgba(99,242,220,.12),inset 0 0 14px rgba(99,242,220,.08);position:relative}
+.shell .brand-mark:after{content:"";position:absolute;inset:-5px;border:1px solid rgba(99,242,220,.12);border-radius:14px;animation:os-ring 5s linear infinite}
+.shell .nav-link{position:relative;overflow:hidden;transition:background .22s,border-color .22s,color .22s,transform .22s}
+.shell .nav-link:before{content:"";position:absolute;left:0;top:20%;bottom:20%;width:2px;background:#63f2dc;transform:scaleY(0);transition:transform .22s}
+.shell .nav-link:hover{transform:translateX(3px);background:rgba(99,242,220,.07);color:#e1ffff}
+.shell .nav-link.active{background:linear-gradient(100deg,rgba(17,133,142,.2),rgba(34,79,112,.14));border-color:rgba(99,242,220,.2);box-shadow:inset 0 0 24px rgba(99,242,220,.035),0 5px 18px rgba(0,0,0,.12)}
+.shell .nav-link.active:before{transform:scaleY(1)}
+.shell .topbar{background:rgba(5,16,29,.62);backdrop-filter:blur(18px);border-bottom-color:rgba(99,242,220,.13)}
+.shell .content{animation:os-enter .65s cubic-bezier(.2,.75,.25,1) both}
+.shell .welcome{position:relative;padding:4px 0 20px;border-bottom:1px solid rgba(99,242,220,.12)}
+.shell .welcome:after{content:"";position:absolute;bottom:-1px;left:0;width:min(230px,42%);height:1px;background:linear-gradient(90deg,#63f2dc,transparent);box-shadow:0 0 12px rgba(99,242,220,.55)}
+.shell .welcome h1{background:linear-gradient(100deg,#f0fbff 5%,#b6e9ed 48%,#72dcd2 100%);background-clip:text;-webkit-background-clip:text;color:transparent}
+.shell .stat,.shell .panel{position:relative;overflow:hidden;transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}
+.shell .stat:before,.shell .panel:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 20%,rgba(125,235,230,.045) 48%,transparent 76%);transform:translateX(-120%);transition:transform .8s ease}
+.shell .stat:hover,.shell .panel:hover{transform:translateY(-3px);border-color:rgba(99,242,220,.32);box-shadow:0 16px 38px rgba(0,0,0,.2),0 0 24px rgba(35,184,180,.055),inset 0 1px rgba(255,255,255,.035)}
+.shell .stat:hover:before,.shell .panel:hover:before{transform:translateX(120%)}
+.shell .stat{background:linear-gradient(145deg,rgba(14,37,53,.97),rgba(9,24,40,.97));}
+.shell .stat-icon{box-shadow:0 0 20px rgba(99,242,220,.08)}
+.shell .stat-value{font-variant-numeric:tabular-nums;text-shadow:0 0 22px rgba(99,242,220,.12)}
+.shell .focus-card{position:relative;overflow:hidden;background:linear-gradient(110deg,rgba(11,94,99,.2),rgba(19,65,91,.17));border-color:rgba(99,242,220,.22)}
+.shell .focus-card:after{content:"";position:absolute;top:-40%;bottom:-40%;left:-35%;width:24%;transform:rotate(18deg);background:linear-gradient(90deg,transparent,rgba(144,255,239,.1),transparent);animation:os-sweep 8s ease-in-out infinite}
+.shell .quick-action{position:relative;overflow:hidden;transition:transform .22s,border-color .22s,background .22s,box-shadow .22s}
+.shell .quick-action:hover{transform:translateY(-3px);border-color:rgba(99,242,220,.38);background:rgba(15,62,72,.42);box-shadow:0 10px 26px rgba(0,0,0,.18),0 0 18px rgba(99,242,220,.06)}
+.shell .quick-action svg{filter:drop-shadow(0 0 7px rgba(99,242,220,.25))}
+.shell .status-dot{animation:os-pulse 2.4s ease-in-out infinite}
+.shell .date-chip{box-shadow:inset 0 0 16px rgba(99,242,220,.035)}
+.shell .agent-icon{box-shadow:inset 0 0 14px rgba(99,242,220,.05)}
+.shell .mobile-bottom-nav{box-shadow:0 -12px 35px rgba(0,0,0,.22)}
+.portfolio-hero:before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 72% 42%,rgba(44,190,190,.09),transparent 35%);animation:os-breathe 8s ease-in-out infinite}
+.portfolio-project,.expertise-grid article{transition:transform .28s ease,border-color .28s ease,box-shadow .28s ease}
+.portfolio-project:hover,.expertise-grid article:hover{transform:translateY(-5px);border-color:rgba(99,242,220,.35);box-shadow:0 18px 45px rgba(0,0,0,.2),0 0 24px rgba(99,242,220,.055)}
+.public-page-cards .portfolio-project{position:relative;overflow:hidden}
+.public-page-cards .portfolio-project:after{content:"";position:absolute;inset:auto 0 0;height:2px;background:linear-gradient(90deg,#63f2dc,rgba(99,242,220,0));transform:scaleX(.12);transform-origin:left;transition:transform .35s}
+.public-page-cards .portfolio-project:hover:after{transform:scaleX(1)}
+@keyframes os-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes os-ring{to{transform:rotate(360deg)}}
+@keyframes os-pulse{0%,100%{box-shadow:0 0 0 0 rgba(99,242,220,.24),0 0 12px rgba(99,242,220,.55)}50%{box-shadow:0 0 0 5px rgba(99,242,220,0),0 0 18px rgba(99,242,220,.8)}}
+@keyframes os-sweep{0%,18%{left:-35%;opacity:0}35%{opacity:1}62%,100%{left:125%;opacity:0}}
+@keyframes os-breathe{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:1;transform:scale(1.035)}}
+@media(max-width:760px){
+ .shell:before{background-size:32px 32px;opacity:.12}
+ .shell:after{opacity:.07}
+ .shell .stat:hover,.shell .panel:hover,.shell .quick-action:hover{transform:none}
+ .shell .welcome{padding-bottom:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ .shell .content,.shell .brand-mark:after,.shell .status-dot,.shell .focus-card:after,.portfolio-hero:before{animation:none!important}
+ .shell .stat,.shell .panel,.shell .quick-action,.shell .nav-link,.portfolio-project,.expertise-grid article{transition:none!important}
+}
