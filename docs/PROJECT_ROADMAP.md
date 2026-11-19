@@ -80,6 +80,40 @@ This document is the working checklist for the Personal AI OS project. Update it
 
 A milestone is not complete because code was added. It is complete only when tests pass, security boundaries are verified, documentation is updated, and the owner is told exactly what remains disabled or requires credentials/approval.
 
+## Milestone progress — 2026-11-19
+
+### 1. CI/CD baseline — complete on development branch
+- GitHub Actions validate job passed: agent runtime tests, AI Gateway tests, TypeScript, ESLint and production build.
+- Database job passed: core, hardware inventory, immutable stock ledger migrations and Activity Journal smoke test.
+- Vercel check passed for the validated commit. This is a build/deployment check only; no Contabo production deployment was performed.
+- Latest validated commit at the time of this update: `23215e8991465358ae049288039fc263e4134ff0`. New integration work below is pending a fresh CI run.
+
+### 2. AI Provider Manager — first UI/API slice implemented
+- Owner-only provider status API exposes provider ID, model, local/hosted classification and configured state; it never returns API keys or provider base URLs.
+- Workspace Integrations page now displays configured AI providers and explains that configured does not equal live health/quota.
+- External provider use remains blocked unless the owner explicitly opts in. No paid fallback was added.
+- Live provider health/latency checks and owner-controlled provider enable/disable settings remain future work; do not imply they are implemented.
+
+### 3. GitHub read-only integration — first slice implemented
+- Owner-only `GET /api/integrations/github` reads repository metadata and up to five latest commits from GitHub's official API.
+- Repository target is fixed by server configuration (`GITHUB_READONLY_REPOSITORY`); client cannot supply an arbitrary repository URL.
+- Public repository access needs no token. Optional `GITHUB_READONLY_TOKEN` should be a fine-grained token with only Metadata and Contents read-only permissions.
+- No write endpoints, shell execution, webhook or automatic commit/issue/PR actions exist.
+- Workspace Integrations page displays repository state and recent commits. Private repo visibility/token behavior must be verified with owner configuration.
+
+### 4. Windows Local Agent — safe bootstrap foundation implemented
+- Added `scripts/windows-local-agent.ps1` to check local Ollama and list already-installed models; optional `-StartOllama` starts Ollama on loopback only.
+- Added `docs/WINDOWS_LOCAL_AGENT.md` describing phased local runtime, pairing, revocation, lazy MCP and resource policy.
+- Script does not download models, install MCP servers, create startup tasks, expose public ports or execute arbitrary computer actions.
+- Actual paired local agent runtime, Windows Credential Manager/DPAPI device credential, outbound secure tunnel and computer/file automation remain future implementation and require security tests.
+
+### Next acceptance gates
+- Run full CI on the integration API/UI/Windows bootstrap changes and fix every failure.
+- Add tests for GitHub route owner isolation, upstream errors/timeouts and bounded response mapping.
+- Verify GitHub repository access under the configured public/private visibility without widening token scopes.
+- Add explicit owner-controlled provider enable/disable only after a secure persistence design; do not implement client-side secret storage.
+- Implement local pairing/revocation before connecting PC tools to the VPS.
+
 ## Runtime footprint and integration policy (2026-11-19)
 
 ### Lightweight operating model
