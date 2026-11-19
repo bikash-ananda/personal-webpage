@@ -11,10 +11,10 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   fileName: filename,
 }).outputText;
-const module = { exports: {} };
+const compiledModule = { exports: {} };
 const wrapper = vm.runInThisContext(`(function(exports, require, module) { ${compiled}\n})`, { filename });
-wrapper(module.exports, require, module);
-const { getConfiguredAiProviders } = module.exports;
+wrapper(compiledModule.exports, require, compiledModule);
+const { getConfiguredAiProviders } = compiledModule.exports;
 
 const localOnly = getConfiguredAiProviders({ OLLAMA_MODEL: "llama3" });
 assert.deepEqual(localOnly.map((provider) => provider.id), ["ollama"], "local Ollama is available without external opt-in");
