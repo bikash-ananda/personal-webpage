@@ -4,14 +4,14 @@ import { useState } from "react";
 import { Activity, CheckCircle2, CircleAlert, Play, ShieldCheck } from "lucide-react";
 import type { AgentDefinition } from "@/lib/agents/registry";
 
-type ReadTool = "project_read" | "task_read" | "github_read";
+type ReadTool = "project_read" | "task_read" | "github_read" | "knowledge_read";
 type ToolResult = { runId: string; tool: string; result: unknown };
 
-const availableTools: ReadTool[] = ["project_read", "task_read", "github_read"];
+const availableTools: ReadTool[] = ["project_read", "task_read", "github_read", "knowledge_read"];
 const labels: Record<ReadTool, string> = {
   project_read: "Read projects",
   task_read: "Read tasks",
-  github_read: "Read GitHub",
+  github_read: "Read GitHub",\n  knowledge_read: "Read knowledge",
 };
 
 export default function AgentToolConsole({ agents }: { agents: AgentDefinition[] }) {
