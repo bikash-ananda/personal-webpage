@@ -79,3 +79,12 @@ Automated regression tests now cover canonicalization, allowlist denial, disable
 - Approval locks the exact pending record, verifies owner, expiry, action type, digest and current runtime policy, then inserts the knowledge item and marks the approval/run executed in one database transaction. The browser submits only the approval ID at execution time; it cannot alter the approved payload.
 - Sensitive and restricted labels are metadata, not a substitute for future encryption/key-management controls. The current UI is owner-only; no public access is granted.
 - The Research and Knowledge workspace pages expose source discovery, owner-scoped retrieval, and explicit save approval. General public-web search, page crawling, document ingestion/OCR, semantic/vector retrieval and model-generated cited synthesis remain future work until safe free-tier providers and source verification are integrated.
+
+
+## Task planning and communications draft slice
+
+- The task-planning endpoint now enforces the shared runtime policy for `task_propose`. The model may propose tasks, but only the existing owner approval endpoint can persist the exact server-stored proposal. No task is created by the planning request itself.
+- The Communications specialist can create private unsent drafts through `POST /api/agents/drafts`. Drafts are stored as owner-scoped knowledge records tagged with `unsent_communication_draft` and logged in the append-only activity journal.
+- The Communications workspace can list and review those drafts. No email, SMS, social post or other external send action is implemented or enabled.
+- Pending knowledge approvals can be retrieved from the owner-only approval inbox, approved against their exact digest-bound payload, or rejected. Rejection marks the associated run cancelled and records an audit event.
+- These are bounded actions only; the model gateway still requires a configured free provider before model-generated task plans or message content can be produced.
