@@ -43,4 +43,29 @@ const customEndpointIgnored = getConfiguredAiProviders({
 });
 assert.equal(customEndpointIgnored.length, 0, "arbitrary custom endpoints are unsupported to prevent accidental paid API use");
 
+const blockedPrivateProviderUrl = getConfiguredAiProviders({
+  AI_ALLOW_EXTERNAL_PROVIDERS: "true",
+  AI_PROVIDER_ORDER: "groq",
+  GROQ_BASE_URL: "http://127.0.0.1:8080/v1",
+  GROQ_API_KEY: "test-groq",
+  GROQ_MODEL: "groq-test",
+});
+assert.equal(blockedPrivateProviderUrl.length, 0, "hosted providers must reject private-network and non-HTTPS endpoints");
+
+const blockedWrongProviderHost = getConfiguredAiProviders({
+  AI_ALLOW_EXTERNAL_PROVIDERS: "true",
+  AI_PROVIDER_ORDER: "gemini",
+  GEMINI_BASE_URL: "https://attacker.example/v1",
+  GEMINI_API_KEY: "test-gemini",
+  GEMINI_MODEL: "gemini-test",
+});
+assert.equal(blockedWrongProviderHost.length, 0, "provider endpoints must match the provider's official host");
+
+const blockedRemoteOllama = getConfiguredAiProviders({
+  AI_PROVIDER_ORDER: "ollama",
+  OLLAMA_BASE_URL: "http://192.168.1.10:11434/v1",
+  OLLAMA_MODEL: "llama3",
+});
+assert.equal(blockedRemoteOllama.length, 0, "Ollama is restricted to the local machine");
+
 console.log("Free-first AI gateway policy tests passed.");
