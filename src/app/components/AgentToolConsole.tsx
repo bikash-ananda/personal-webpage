@@ -11,7 +11,8 @@ const availableTools: ReadTool[] = ["project_read", "task_read", "github_read", 
 const labels: Record<ReadTool, string> = {
   project_read: "Read projects",
   task_read: "Read tasks",
-  github_read: "Read GitHub",\n  knowledge_read: "Read knowledge",
+  github_read: "Read GitHub",
+  knowledge_read: "Read knowledge",
 };
 
 export default function AgentToolConsole({ agents }: { agents: AgentDefinition[] }) {
