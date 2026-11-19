@@ -47,7 +47,8 @@ function canonicalJson(value: unknown, depth = 0): string {
     if (encoded === undefined) throw new Error("Action payload must contain JSON values only.");
     return encoded;
   }
-  if (typeof value === "number" && Number.isFinite(value)) {
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error("Action payload must contain finite numbers.");
     const encoded = JSON.stringify(value);
     if (encoded === undefined) throw new Error("Action payload must contain finite numbers.");
     return encoded;
