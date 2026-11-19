@@ -14,14 +14,14 @@ async function loadTypeScript(relativePath, mocks = {}) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
     fileName: filename,
   }).outputText;
-  const module = { exports: {} };
+  const compiledModule = { exports: {} };
   const localRequire = (specifier) => {
     if (Object.prototype.hasOwnProperty.call(mocks, specifier)) return mocks[specifier];
     return require(specifier);
   };
   const wrapper = vm.runInThisContext(`(function(exports, require, module, __filename, __dirname) { ${compiled}\n})`, { filename });
-  wrapper(module.exports, localRequire, module, filename, new URL(".", `file://${filename}`).pathname);
-  return module.exports;
+  wrapper(compiledModule.exports, localRequire, compiledModule, filename, new URL(".", `file://${filename}`).pathname);
+  return compiledModule.exports;
 }
 
 const agents = await loadTypeScript("src/lib/agents/registry.ts");
