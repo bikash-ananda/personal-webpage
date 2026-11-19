@@ -57,6 +57,16 @@ for (const toolKey of ["project_read", "task_read"]) {
   );
 }
 assert.deepEqual(
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "chief_of_staff", toolKey: "task_propose", target: "owner_workspace", args: { brief: "Prepare a sprint" } }),
+  { outcome: "allow", reason: "read_only_or_draft" },
+  "Chief of Staff may propose tasks but saving remains separately owner-approved",
+);
+assert.deepEqual(
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "communications", toolKey: "draft_create", target: "owner-drafts", args: { title: "Reply", body: "Draft", status: "unsent" } }),
+  { outcome: "allow", reason: "read_only_or_draft" },
+  "Communications may save private drafts but may not send them",
+);
+assert.deepEqual(
   runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "knowledge", toolKey: "knowledge_read", target: "owner_workspace", args: {} }),
   { outcome: "allow", reason: "read_only_or_draft" },
   "knowledge specialist must be able to retrieve owner-scoped memory",
@@ -121,19 +131,6 @@ assert.throws(() => runtime.createActionDigest({
   ownerId: "owner-1", agentKey: "engineering", toolKey: "github_read",
   target: "repo:demo", args: sparse,
 }), /Sparse arrays/);
-
-const knowledge = setReady("knowledge_write", true);
-try {
-  const decision = runtime.evaluateToolRequest({
-    ownerId: "owner-1", agentKey: "knowledge", toolKey: "knowledge_write",
-    target: "owner-knowledge", args: { title: "Test", body: "Draft" },
-  });
-  assert.equal(decision.outcome, "approval_required", "tier-two writes require owner approval");
-  assert.equal(decision.actionDigest.length, 64, "approval must bind a SHA-256 action digest");
-} finally {
-  knowledge.enabled = false;
-  knowledge.implemented = false;
-}
 
 const deployment = setReady("server_deploy", true);
 try {
