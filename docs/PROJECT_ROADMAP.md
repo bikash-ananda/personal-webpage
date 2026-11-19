@@ -79,3 +79,42 @@ This document is the working checklist for the Personal AI OS project. Update it
 ## Definition of done
 
 A milestone is not complete because code was added. It is complete only when tests pass, security boundaries are verified, documentation is updated, and the owner is told exactly what remains disabled or requires credentials/approval.
+
+## Runtime footprint and integration policy (2026-11-19)
+
+### Lightweight operating model
+
+- Keep the Contabo VPS as a thin control plane: Next.js app/API, existing PostgreSQL, scheduled lightweight jobs only. Do not host local LLM inference or launch a fleet of always-on MCP processes on this shared VPS.
+- Run local models (Ollama) and desktop/computer/file MCP servers on the user's Windows PC when that PC is online. The VPS must continue operating if the PC is offline.
+- Use remote SaaS APIs directly through small server-side adapters when an official stable REST API exists. Use MCP when interoperability/tool discovery is valuable; do not wrap every API in a separate MCP server.
+- MCP connections are lazy/on-demand, per task, allowlisted and closed/released after use. Load tool schemas only for the specialist agent that needs them; cap tool count, output size, timeouts and concurrent calls.
+- Prefer stateless Streamable HTTP for remote MCP integrations; use local stdio MCP for desktop-only tools. Never expose a local stdio server directly to the public internet.
+- No Docker container or system service per integration. Start with in-process adapters; add a separately isolated service only when a measured need justifies it.
+- Reuse the existing PostgreSQL and existing host Caddy. No additional database, Redis, vector database, reverse proxy or always-on worker is approved until resource measurements show a need.
+- Apply resource caps, request timeouts, rate limits, bounded retries and circuit breakers. Do not retry write operations unless idempotency is guaranteed.
+
+### API and MCP integration roadmap
+
+1. Core: internal app API, provider gateway, PostgreSQL, GitHub API (read-only first), public web research.
+2. Productivity: Google OAuth + Gmail and Calendar APIs, with read-only scopes first and explicit approval for sending/updating.
+3. Files/knowledge: Google Drive or user-selected storage, local PC file access via local MCP only, owner-scoped indexing with file size/type limits.
+4. Development/operations: GitHub issues/PR/status, deployment diagnostics read-only, VPS diagnostics with fixed allowlisted commands only. No arbitrary shell MCP.
+5. Communication: WhatsApp Business Platform / official messaging APIs only after provider eligibility, costs and webhook requirements are checked; no unofficial session scraping.
+6. Smart agriculture/IoT: existing Digital Agriculture API as the integration boundary; telemetry read-only first. Device commands remain disabled until device identity, interlocks, audit and action-time confirmation are tested.
+7. Optional future APIs: weather, maps/geocoding, speech-to-text/text-to-speech and image analysis only when the feature needs them and a genuinely free tier/local alternative is verified.
+
+### MCP security and context budget
+
+- Maintain a central registry of MCP servers and individual tool allowlists; never give every agent every tool.
+- Treat MCP descriptions, resources, results and linked URLs as untrusted data; defend against prompt injection and data exfiltration.
+- Each tool receives only the minimum arguments/data it needs; no whole-chat transcript, secrets or unrelated private memory.
+- Read-only tools may run automatically within strict limits. Drafts require review before external submission. Writes, messages, deployment and physical actuation require explicit owner approval at action time.
+- Record server identity/version, tool name, approval decision, latency, bounded result summary and action digest. Never log credentials or full sensitive payloads.
+- Require official/verified server provenance where possible; review source, permissions, update history and data handling before enabling third-party MCP servers.
+
+### API cost policy
+
+- No paid provider fallback and no hidden paid calls. External model providers stay disabled until the owner supplies a key and explicitly opts in.
+- Free tiers are quotas, not guaranteed unlimited capacity; show configured provider and last-known health, but do not claim remaining quota unless the provider exposes it.
+- Prefer local processing for private data and use hosted free tiers only for data that is safe to disclose under that provider's terms.
+- Check each API's current free-tier limits, data retention and terms before activation; API availability does not imply free usage.
