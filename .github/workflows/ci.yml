@@ -25,6 +25,8 @@ jobs:
         run: npm install
       - name: Agent runtime policy tests
         run: npm run test:agent-runtime
+      - name: Free-first AI gateway tests
+        run: npm run test:ai-gateway
       - name: Type check
         run: npm run typecheck
       - name: Lint
