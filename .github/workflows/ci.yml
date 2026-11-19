@@ -110,6 +110,10 @@ jobs:
           printf '%s' "$VPS_DEPLOY_KEY_B64" | base64 --decode > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           eval "$(ssh-agent -s)"
+          {
+            echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
+            echo "SSH_AGENT_PID=$SSH_AGENT_PID"
+          } >> "$GITHUB_ENV"
           ssh-add ~/.ssh/deploy_key
           rm -f ~/.ssh/deploy_key
       - name: Configure pinned VPS host key
