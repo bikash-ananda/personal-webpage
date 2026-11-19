@@ -47,12 +47,14 @@ export function getConfiguredAiProviders(env: Env = process.env): AiProviderConf
 
   for (const id of order) {
     if (id === "custom") {
+      if (env.AI_ALLOW_EXTERNAL_PROVIDERS !== "true") continue;
       const baseUrl = env.AI_BASE_URL ? cleanBaseUrl(env.AI_BASE_URL) : "";
       const model = env.AI_MODEL?.trim() || "";
       if (baseUrl && model) providers.push({ id, baseUrl, model, apiKey: env.AI_API_KEY || undefined });
       continue;
     }
 
+    if (id !== "ollama" && env.AI_ALLOW_EXTERNAL_PROVIDERS !== "true") continue;
     const names = PROVIDER_ENV[id];
     const baseUrl = cleanBaseUrl(env[names.baseUrl] || names.defaultBaseUrl || "");
     const model = env[names.model]?.trim() || "";
