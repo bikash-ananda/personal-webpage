@@ -40,6 +40,16 @@ export default function KnowledgeWorkbench({ mode }: { mode: "research" | "knowl
     finally { setSearching(false); }
   }
 
+  async function loadPendingApproval() {
+    try {
+      const response = await fetch("/api/agents/knowledge/approvals", { cache: "no-store" });
+      const data = await response.json();
+      if (!response.ok) return;
+      const first = Array.isArray(data.approvals) ? data.approvals[0] : null;
+      setPending(first ? { approvalId: first.approvalId, expiresAt: first.expiresAt, title: first.title } : null);
+    } catch { /* Approval inbox remains available on the next manual refresh. */ }
+  }
+
   async function refresh() {
     setLoading(true); setError(""); setNotice("");
     try {
@@ -50,6 +60,7 @@ export default function KnowledgeWorkbench({ mode }: { mode: "research" | "knowl
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Knowledge retrieval failed.");
       setRecords(Array.isArray(data.result?.records) ? data.result.records : []);
+      await loadPendingApproval();
       setNotice("Loaded " + (data.result?.count ?? 0) + " saved records.");
     } catch (e) { setError(e instanceof Error ? e.message : "Knowledge retrieval failed."); }
     finally { setLoading(false); }
@@ -71,6 +82,21 @@ export default function KnowledgeWorkbench({ mode }: { mode: "research" | "knowl
       setPending({ approvalId: data.approvalId, expiresAt: data.expiresAt, title });
       setNotice("A save request is waiting for your explicit approval. Nothing has been saved yet.");
     } catch (e) { setError(e instanceof Error ? e.message : "Could not create approval request."); }
+    finally { setSaving(false); }
+  }
+
+  async function reject() {
+    if (!pending) return;
+    setSaving(true); setError("");
+    try {
+      const response = await fetch("/api/agents/knowledge/reject", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ approvalId: pending.approvalId }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Could not reject approval.");
+      setPending(null); setNotice("Knowledge save request rejected. No record was saved.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Could not reject approval."); }
     finally { setSaving(false); }
   }
 
@@ -141,7 +167,8 @@ export default function KnowledgeWorkbench({ mode }: { mode: "research" | "knowl
       {pending ? <section className="panel" style={{ borderColor: "rgba(244,200,121,.35)" }}>
         <div className="panel-title">Owner approval required</div>
         <p className="panel-sub" style={{ marginTop: 8 }}>Exact record: <strong>{pending.title}</strong>. The payload is bound to this approval and expires at {new Date(pending.expiresAt).toLocaleString()}.</p>
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 12 }}>
+          <button type="button" disabled={saving} onClick={() => void reject()} style={{ minHeight: 40, padding: "0 14px", border: "1px solid var(--line)", borderRadius: 8, background: "transparent", color: "var(--text)", fontSize: 11 }}>Reject</button>
           <button type="button" disabled={saving} onClick={() => void approve()} style={{ display: "inline-flex", alignItems: "center", gap: 7, minHeight: 40, padding: "0 14px", border: 0, borderRadius: 8, background: "var(--mint)", color: "#092018", fontWeight: 700, fontSize: 11 }}><CheckCircle2 size={14}/>{saving ? "Approving…" : "Approve exact record & save"}</button>
         </div>
       </section> : null}
