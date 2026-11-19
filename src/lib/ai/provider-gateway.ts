@@ -1,4 +1,4 @@
-export type AiProviderId = "ollama" | "gemini" | "groq" | "openrouter" | "cloudflare" | "nvidia" | "custom";
+export type AiProviderId = "ollama" | "gemini" | "groq" | "openrouter" | "cloudflare" | "nvidia";
 
 export type AiMessage = { role: "system" | "user" | "assistant"; content: string };
 export type AiProviderConfig = {
@@ -35,25 +35,17 @@ function cleanBaseUrl(value: string): string {
 /**
  * Free-first provider discovery. A provider is never inferred from an API key
  * alone: it must have an explicit model configured. Paid/custom endpoints are
- * excluded unless the owner explicitly adds "custom" to AI_PROVIDER_ORDER.
+ * Custom endpoints are deliberately unsupported to avoid accidental paid APIs.
  */
 export function getConfiguredAiProviders(env: Env = process.env): AiProviderConfig[] {
   const requestedOrder = (env.AI_PROVIDER_ORDER || FREE_PROVIDER_ORDER.join(","))
     .split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
   const order = requestedOrder.filter((value): value is AiProviderId =>
-    ["ollama", "gemini", "groq", "openrouter", "cloudflare", "nvidia", "custom"].includes(value),
+    ["ollama", "gemini", "groq", "openrouter", "cloudflare", "nvidia"].includes(value),
   );
   const providers: AiProviderConfig[] = [];
 
   for (const id of order) {
-    if (id === "custom") {
-      if (env.AI_ALLOW_EXTERNAL_PROVIDERS !== "true") continue;
-      const baseUrl = env.AI_BASE_URL ? cleanBaseUrl(env.AI_BASE_URL) : "";
-      const model = env.AI_MODEL?.trim() || "";
-      if (baseUrl && model) providers.push({ id, baseUrl, model, apiKey: env.AI_API_KEY || undefined });
-      continue;
-    }
-
     if (id !== "ollama" && env.AI_ALLOW_EXTERNAL_PROVIDERS !== "true") continue;
     const names = PROVIDER_ENV[id];
     const baseUrl = cleanBaseUrl(env[names.baseUrl] || names.defaultBaseUrl || "");
