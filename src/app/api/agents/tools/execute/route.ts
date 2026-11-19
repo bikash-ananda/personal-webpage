@@ -17,7 +17,17 @@ function isEmptyRecord(value: unknown): value is Record<string, never> {
 }
 
 async function executeReadOnlyTool(toolKey: ToolKey, ownerId: string) {
-  if (toolKey === "knowledge_read") {\n    const result = await pool.query(\n      `SELECT id, project_id, title, body, content_type, source_uri, sensitivity, provenance, tags, created_at, updated_at\n       FROM personal_knowledge WHERE owner_id=$1 AND deleted_at IS NULL\n       ORDER BY updated_at DESC LIMIT 100`,\n      [ownerId]\n    );\n    return { count: result.rowCount ?? 0, records: result.rows };\n  }\n\n  if (toolKey === "project_read") {
+  if (toolKey === "knowledge_read") {
+    const result = await pool.query(
+      `SELECT id, project_id, title, body, content_type, source_uri, sensitivity, provenance, tags, created_at, updated_at
+       FROM personal_knowledge WHERE owner_id=$1 AND deleted_at IS NULL
+       ORDER BY updated_at DESC LIMIT 100`,
+      [ownerId]
+    );
+    return { count: result.rowCount ?? 0, records: result.rows };
+  }
+
+  if (toolKey === "project_read") {
     const result = await pool.query(
       `SELECT id, name, summary, status, priority, updated_at
        FROM personal_projects
