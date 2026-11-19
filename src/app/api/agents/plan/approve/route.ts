@@ -111,7 +111,7 @@ export async function POST(request: Request) {
 
     await client.query("COMMIT");
     return NextResponse.json({ saved: inserted.length, tasks: inserted }, { status: 201, headers: noStore });
-  } catch (error) {
+  } catch {
     await client.query("ROLLBACK").catch(() => undefined);
     return NextResponse.json({ error: "The approved plan could not be saved. No tasks were committed." }, { status: 503, headers: noStore });
   } finally {
