@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/auth";
 import { getOwnerContext, hasTrustedMutationOrigin } from "@/lib/server/owner";
 import { getAgent } from "@/lib/agents/registry";
+import { createAiChatCompletion } from "@/lib/ai/provider-gateway";
 
 export const dynamic="force-dynamic";
 const noStore={"Cache-Control":"private, no-store, max-age=0"};
@@ -35,10 +36,6 @@ export async function POST(request:Request) {
  const agent=getAgent(agentKey);
  if(!agent) return NextResponse.json({error:"Unknown specialist agent."},{status:400,headers:noStore});
  if(!brief||brief.length>5000) return NextResponse.json({error:"A work brief is required (maximum 5000 characters)."},{status:400,headers:noStore});
- const base=(process.env.AI_BASE_URL||"").replace(/\/+$/,"");
- const model=process.env.AI_MODEL||"";
- const apiKey=process.env.AI_API_KEY||"";
- if(!base||!model) return NextResponse.json({error:"AI provider is not configured. Set AI_BASE_URL and AI_MODEL in the private server environment; add AI_API_KEY for hosted providers."},{status:503,headers:noStore});
  let runId:string|null=null;
  try{
   const client=await pool.connect();
@@ -63,16 +60,13 @@ export async function POST(request:Request) {
    client.release();
   }
   const system="You are "+agent.name+" for a private Personal AI OS. Mission: "+agent.mission+". Return only JSON with shape {\"tasks\":[{\"title\":\"...\",\"description\":\"...\",\"priority\":\"low|medium|high|critical\",\"due_in_days\":number|null}]}. Create 3 to 8 practical, ordered tasks. Do not claim to execute tools, contact people, modify files or deploy anything. This is a proposal only. Respect the owner's safety and ask for approval for consequential actions.";
-  const headers:Record<string,string>={"Content-Type":"application/json"};
-  if(apiKey) headers.Authorization="Bearer "+apiKey;
-  const response=await fetch(base+"/chat/completions",{method:"POST",headers,signal:AbortSignal.timeout(45000),body:JSON.stringify({model,messages:[{role:"system",content:system},{role:"user",content:"Create a practical work plan from this brief:\n\n"+brief}],temperature:0.2,response_format:{type:"json_object"}})});
-  if(!response.ok) throw new Error("AI provider returned HTTP "+response.status+".");
-  const payload=await response.json() as {choices?:{message?:{content?:string}}[]};
-  const text=payload.choices?.[0]?.message?.content;
-  if(!text) throw new Error("AI provider returned an empty plan.");
-  const tasks=parsePlan(text);
+  const completion=await createAiChatCompletion({
+   messages:[{role:"system",content:system},{role:"user",content:"Create a practical work plan from this brief:\n\n"+brief}],
+   timeoutMs:45000,
+  });
+  const tasks=parsePlan(completion.content);
   await pool.query("UPDATE agent_runs SET status='succeeded',output=$2::jsonb,finished_at=now() WHERE id=$1 AND owner_id=$3",[runId,JSON.stringify({tasks}),owner.ownerId]);
-  return NextResponse.json({runId,agent:agent.name,tasks},{headers:noStore});
+  return NextResponse.json({runId,agent:agent.name,provider:completion.provider,model:completion.model,tasks},{headers:noStore});
  }catch(error){
   if(runId) await pool.query("UPDATE agent_runs SET status='failed',error_code='planning_failed',finished_at=now() WHERE id=$1 AND owner_id=$2",[runId,owner.ownerId]).catch(()=>undefined);
   const message=error instanceof Error?error.message:"Agent planning failed.";
