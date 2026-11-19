@@ -4,19 +4,21 @@ import { useState } from "react";
 import { Activity, CheckCircle2, CircleAlert, Play, ShieldCheck } from "lucide-react";
 import type { AgentDefinition } from "@/lib/agents/registry";
 
-type ReadTool = "project_read" | "task_read" | "github_read" | "knowledge_read";
+type ReadTool = "project_read" | "task_read" | "github_read" | "knowledge_read" | "encyclopedia_search";
 type ToolResult = { runId: string; tool: string; result: unknown };
 
-const availableTools: ReadTool[] = ["project_read", "task_read", "github_read", "knowledge_read"];
+const availableTools: ReadTool[] = ["project_read", "task_read", "github_read", "knowledge_read", "encyclopedia_search"];
 const labels: Record<ReadTool, string> = {
   project_read: "Read projects",
   task_read: "Read tasks",
   github_read: "Read GitHub",
   knowledge_read: "Read knowledge",
+  encyclopedia_search: "Search Wikipedia",
 };
 
 export default function AgentToolConsole({ agents }: { agents: AgentDefinition[] }) {
   const [loading, setLoading] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const [results, setResults] = useState<Record<string, ToolResult>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -28,7 +30,7 @@ export default function AgentToolConsole({ agents }: { agents: AgentDefinition[]
       const response = await fetch("/api/agents/tools/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ agentKey, toolKey, args: {} }),
+        body: JSON.stringify({ agentKey, toolKey, args: toolKey === "encyclopedia_search" ? { query: searchQuery } : {} }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Agent tool execution failed.");
@@ -59,13 +61,17 @@ export default function AgentToolConsole({ agents }: { agents: AgentDefinition[]
             <div className="task-meta" style={{ marginTop: 12 }}>CAPABILITIES</div>
             {agent.capabilities.map((cap) => <div className="task-meta" key={cap} style={{ marginTop: 6 }}>· {cap}</div>)}
             <div className="task-meta" style={{ marginTop: 12 }}>TOOL ACCESS</div>
+            {tools.includes("encyclopedia_search") ? (
+              <input aria-label="Research search query" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search public encyclopedia…" maxLength={180}
+                style={{ width: "100%", minHeight: 38, marginTop: 8, padding: "8px 10px", border: "1px solid var(--line)", borderRadius: 8, background: "#0b1322", color: "var(--text)", fontSize: 11 }}/>
+            ) : null}
             {tools.length ? (
               <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginTop: 8 }}>
                 {tools.map((tool) => {
                   const key = agent.key + ":" + tool;
                   const busy = loading === key;
                   return (
-                    <button key={tool} type="button" onClick={() => void runTool(agent.key, tool)} disabled={Boolean(loading)}
+                    <button key={tool} type="button" onClick={() => void runTool(agent.key, tool)} disabled={Boolean(loading) || (tool === "encyclopedia_search" && searchQuery.trim().length < 2)}
                       style={{ display: "inline-flex", alignItems: "center", gap: 6, border: "1px solid var(--line)", borderRadius: 8, padding: "8px 10px", background: "rgba(155,240,199,.07)", color: "var(--text)", fontSize: 10, cursor: "pointer" }}>
                       {busy ? <Activity size={12} /> : <Play size={11} />}
                       {busy ? "Running…" : labels[tool]}
