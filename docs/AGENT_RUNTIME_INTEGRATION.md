@@ -69,3 +69,13 @@ Automated regression tests now cover canonicalization, allowlist denial, disable
 - `POST /api/agents/tools/execute` checks trusted origin, owner session, agent identity, declared tool allowlist, enabled/implemented state and risk policy. Tool arguments must be an empty JSON object; targets are selected server-side and cannot be supplied by the model or browser.
 - Each run is persisted as `running` then `succeeded` or `failed` in `agent_runs`, with a per-owner hourly cap.
 - No shell, filesystem write, GitHub mutation, email, production deployment or actuator adapter is enabled by this slice.
+
+
+## Research and knowledge — staged capabilities
+
+- The Research specialist can use `encyclopedia_search`, a fixed-host, read-only search against English Wikipedia. Queries are bounded to 2–180 characters, requests time out after 8 seconds, and results are limited to eight. This is initial source discovery only; it is not general web search and does not replace primary research, official sources or independent verification.
+- The Research specialist can retrieve owner-scoped knowledge records and save a research dossier only through an explicit approval request.
+- The Knowledge specialist can retrieve up to 100 owner-scoped records. Knowledge writes create a pending `action_approvals` record bound to a canonical SHA-256 payload digest and expire after 15 minutes.
+- Approval locks the exact pending record, verifies owner, expiry, action type, digest and current runtime policy, then inserts the knowledge item and marks the approval/run executed in one database transaction. The browser submits only the approval ID at execution time; it cannot alter the approved payload.
+- Sensitive and restricted labels are metadata, not a substitute for future encryption/key-management controls. The current UI is owner-only; no public access is granted.
+- The Research and Knowledge workspace pages expose source discovery, owner-scoped retrieval, and explicit save approval. General public-web search, page crawling, document ingestion/OCR, semantic/vector retrieval and model-generated cited synthesis remain future work until safe free-tier providers and source verification are integrated.
