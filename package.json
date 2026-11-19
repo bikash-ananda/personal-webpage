@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test:agent-runtime": "node scripts/test-agent-runtime.mjs"
+    "test:agent-runtime": "node scripts/test-agent-runtime.mjs",
+    "test:ai-gateway": "node scripts/test-ai-gateway.mjs"
   },
   "dependencies": {
     "next": "15.5.29",
