@@ -35,19 +35,12 @@ const enabledExternal = getConfiguredAiProviders({
 });
 assert.deepEqual(enabledExternal.map((provider) => provider.id), ["gemini", "groq"], "configured free providers follow owner-defined order");
 
-const customBlocked = getConfiguredAiProviders({
+const customEndpointIgnored = getConfiguredAiProviders({
   AI_ALLOW_EXTERNAL_PROVIDERS: "true",
+  AI_PROVIDER_ORDER: "custom",
   AI_BASE_URL: "https://paid.example/v1",
   AI_MODEL: "paid-model",
 });
-assert.equal(customBlocked.length, 0, "custom endpoints are not silently included");
-
-const customExplicit = getConfiguredAiProviders({
-  AI_ALLOW_EXTERNAL_PROVIDERS: "true",
-  AI_PROVIDER_ORDER: "custom",
-  AI_BASE_URL: "https://custom.example/v1",
-  AI_MODEL: "custom-model",
-});
-assert.equal(customExplicit[0]?.id, "custom", "custom endpoint requires explicit provider order and external opt-in");
+assert.equal(customEndpointIgnored.length, 0, "arbitrary custom endpoints are unsupported to prevent accidental paid API use");
 
 console.log("Free-first AI gateway policy tests passed.");
