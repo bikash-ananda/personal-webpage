@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 const noStore = { "Cache-Control": "private, no-store, max-age=0" };
 const GITHUB_REPOSITORY = "bikash-ananda/personal-webpage";
 
-type ToolKey = "project_read" | "task_read" | "github_read" | "knowledge_read";
+type ToolKey = "project_read" | "task_read" | "github_read" | "knowledge_read" | "encyclopedia_search";
 
 function isEmptyRecord(value: unknown): value is Record<string, never> {
   return Boolean(value && typeof value === "object" && !Array.isArray(value)
@@ -16,7 +16,32 @@ function isEmptyRecord(value: unknown): value is Record<string, never> {
     && Object.keys(value).length === 0);
 }
 
-async function executeReadOnlyTool(toolKey: ToolKey, ownerId: string) {
+async function executeReadOnlyTool(toolKey: ToolKey, ownerId: string, args: Record<string, unknown>) {
+  if (toolKey === "encyclopedia_search") {
+    const query = typeof args.query === "string" ? args.query.trim() : "";
+    const url = new URL("https://en.wikipedia.org/w/api.php");
+    url.searchParams.set("action", "query");
+    url.searchParams.set("list", "search");
+    url.searchParams.set("srsearch", query);
+    url.searchParams.set("srlimit", "8");
+    url.searchParams.set("format", "json");
+    url.searchParams.set("utf8", "1");
+    const response = await fetch(url, {
+      headers: { Accept: "application/json", "User-Agent": "PersonalOSResearchAgent/1.0 (private research workspace)" },
+      cache: "no-store", signal: AbortSignal.timeout(8000),
+    });
+    if (!response.ok) throw new Error("The public encyclopedia search is temporarily unavailable.");
+    const data = await response.json() as { query?: { search?: Array<{ pageid: number; title: string; snippet: string; wordcount: number; timestamp: string }> } };
+    const results = (data.query?.search ?? []).slice(0, 8).map(item => ({
+      title: item.title,
+      url: "https://en.wikipedia.org/?curid=" + item.pageid,
+      snippet: item.snippet.replace(/<[^>]*>/g, "").replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, "&"),
+      wordCount: item.wordcount,
+      updatedAt: item.timestamp,
+    }));
+    return { provider: "English Wikipedia", query, count: results.length, results, limitation: "Initial source discovery only; verify important claims against primary research, official documents and multiple independent sources." };
+  }
+
   if (toolKey === "knowledge_read") {
     const result = await pool.query(
       `SELECT id, project_id, title, body, content_type, source_uri, sensitivity, provenance, tags, created_at, updated_at
@@ -110,14 +135,23 @@ export async function POST(request: Request) {
   const agentKey = typeof input.agentKey === "string" ? input.agentKey : "";
   const toolKey = typeof input.toolKey === "string" ? input.toolKey : "";
   const agent = getAgent(agentKey);
-  if (!agent || !["project_read", "task_read", "github_read", "knowledge_read"].includes(toolKey) || !isEmptyRecord(input.args)) {
-    return NextResponse.json({ error: "Unknown agent/tool or invalid arguments. Read tools currently accept an empty argument object only." }, { status: 400, headers: noStore });
+  const typedTool = toolKey as ToolKey;
+  const args = input.args && typeof input.args === "object" && !Array.isArray(input.args)
+    ? input.args as Record<string, unknown> : null;
+  const validReadTool = ["project_read", "task_read", "github_read", "knowledge_read"].includes(toolKey);
+  const validSearchTool = toolKey === "encyclopedia_search" && args !== null
+    && Object.keys(args).length === 1 && typeof args.query === "string"
+    && args.query.trim().length >= 2 && args.query.trim().length <= 180;
+  if (!agent || !["project_read", "task_read", "github_read", "knowledge_read", "encyclopedia_search"].includes(toolKey)
+      || !args || (validReadTool && !isEmptyRecord(args)) || (!validReadTool && !validSearchTool)) {
+    return NextResponse.json({ error: "Unknown agent/tool or invalid arguments. Search requires one query between 2 and 180 characters; other read tools accept no arguments." }, { status: 400, headers: noStore });
   }
 
-  const typedTool = toolKey as ToolKey;
-  const target = typedTool === "github_read" ? GITHUB_REPOSITORY : "owner_workspace";
+  const target = typedTool === "github_read" ? GITHUB_REPOSITORY
+    : typedTool === "encyclopedia_search" ? "en.wikipedia.org"
+    : "owner_workspace";
   const decision = evaluateToolRequest({
-    ownerId: owner.ownerId, agentKey, toolKey: typedTool, target, args: {},
+    ownerId: owner.ownerId, agentKey, toolKey: typedTool, target, args,
   });
   if (decision.outcome !== "allow") {
     return NextResponse.json({
@@ -142,7 +176,7 @@ export async function POST(request: Request) {
       }
       const run = await client.query(
         "INSERT INTO agent_runs(owner_id,agent_key,task,status,autonomy_tier,input) VALUES($1,$2,$3,'running',0,$4::jsonb) RETURNING id",
-        [owner.ownerId, agentKey, "Read-only tool: " + typedTool, JSON.stringify({ toolKey: typedTool, target })]
+        [owner.ownerId, agentKey, "Read-only tool: " + typedTool, JSON.stringify({ toolKey: typedTool, target, args })]
       );
       runId = run.rows[0].id as string;
       await client.query("COMMIT");
@@ -153,10 +187,10 @@ export async function POST(request: Request) {
       client.release();
     }
 
-    const result = await executeReadOnlyTool(typedTool, owner.ownerId);
+    const result = await executeReadOnlyTool(typedTool, owner.ownerId, args);
     await pool.query(
       "UPDATE agent_runs SET status='succeeded',output=$2::jsonb,finished_at=now() WHERE id=$1 AND owner_id=$3",
-      [runId, JSON.stringify({ toolKey: typedTool, target, result }), owner.ownerId]
+      [runId, JSON.stringify({ toolKey: typedTool, target, args, result }), owner.ownerId]
     );
     return NextResponse.json({ runId, agent: agent.name, tool: typedTool, target, result }, { headers: noStore });
   } catch {
