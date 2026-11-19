@@ -29,7 +29,7 @@ const PROVIDER_ENV: Record<Exclude<AiProviderId, "custom">, {
 };
 
 function cleanBaseUrl(value: string): string {
-  return value.trim().replace(/\\/+$/, "");
+  return value.trim().replace(/[/]+$/, "");
 }
 
 function isAllowedProviderUrl(id: AiProviderId, value: string): boolean {
