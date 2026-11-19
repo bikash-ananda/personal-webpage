@@ -49,10 +49,27 @@ assert.deepEqual(
   "agents must not call tools outside their allowlist",
 );
 
+for (const toolKey of ["project_read", "task_read"]) {
+  assert.deepEqual(
+    runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "chief_of_staff", toolKey, target: "owner_workspace", args: {} }),
+    { outcome: "allow", reason: "read_only_or_draft" },
+    toolKey + " must be executable as a bounded owner-scoped read-only tool",
+  );
+}
 assert.deepEqual(
-  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "chief_of_staff", toolKey: "project_read", target: "owner", args: {} }),
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "engineering", toolKey: "github_read", target: "bikash-ananda/personal-webpage", args: {} }),
+  { outcome: "allow", reason: "read_only_or_draft" },
+  "engineering must be able to read the fixed allowlisted GitHub repository",
+);
+assert.deepEqual(
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "chief_of_staff", toolKey: "github_read", target: "bikash-ananda/personal-webpage", args: {} }),
+  { outcome: "deny", reason: "not_allowlisted" },
+  "Chief of Staff must not gain GitHub access outside its declared tool allowlist",
+);
+assert.deepEqual(
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "chief_of_staff", toolKey: "server_deploy", target: "production", args: {} }),
   { outcome: "deny", reason: "disabled" },
-  "registered tools must remain disabled by default",
+  "high-risk tools must remain disabled until a dedicated approval and execution path exists",
 );
 
 const digestA = runtime.createActionDigest({
