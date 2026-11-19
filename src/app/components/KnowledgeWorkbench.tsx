@@ -1,15 +1,19 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { BookOpen, CheckCircle2, CircleAlert, FilePlus2, RefreshCw, ShieldCheck } from "lucide-react";
+import { BookOpen, CheckCircle2, CircleAlert, FilePlus2, RefreshCw, Search, ShieldCheck } from "lucide-react";
 
 type RecordItem = { id: string; title: string; body: string; content_type: string; source_uri: string | null; sensitivity: string; tags: string[]; updated_at: string };
 type PendingApproval = { approvalId: string; expiresAt: string; title: string } | null;
+type SearchResult = { title: string; url: string; snippet: string; wordCount: number; updatedAt: string };
 
 export default function KnowledgeWorkbench({ mode }: { mode: "research" | "knowledge" }) {
   const agentKey = mode === "research" ? "research" : "knowledge";
   const researchMode = mode === "research";
   const [records, setRecords] = useState<RecordItem[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [sourceUri, setSourceUri] = useState("");
@@ -20,6 +24,21 @@ export default function KnowledgeWorkbench({ mode }: { mode: "research" | "knowl
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+
+  async function searchSources() {
+    setSearching(true); setError(""); setNotice("");
+    try {
+      const response = await fetch("/api/agents/tools/execute", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ agentKey: "research", toolKey: "encyclopedia_search", args: { query: searchQuery } }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || "Source discovery failed.");
+      setSearchResults(Array.isArray(data.result?.results) ? data.result.results : []);
+      setNotice("Found " + (data.result?.count ?? 0) + " initial discovery sources in English Wikipedia. Verify important claims independently.");
+    } catch (e) { setError(e instanceof Error ? e.message : "Source discovery failed."); }
+    finally { setSearching(false); }
+  }
 
   async function refresh() {
     setLoading(true); setError(""); setNotice("");
@@ -74,6 +93,18 @@ export default function KnowledgeWorkbench({ mode }: { mode: "research" | "knowl
 
   return (
     <div style={{ maxWidth: 900, marginTop: 26, display: "grid", gap: 14 }}>
+      {researchMode ? <section className="panel">
+        <div className="panel-head"><div><div className="panel-title">Initial source discovery</div><div className="panel-sub">Free search against English Wikipedia. Verify important claims against primary studies, government sources and independent publications.</div></div><Search size={17}/></div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} maxLength={180} placeholder="Search a topic, technology or research question…" style={{ flex: 1, minWidth: 0, minHeight: 40, padding: "9px 11px", border: "1px solid var(--line)", borderRadius: 8, background: "#0b1322", color: "var(--text)" }}/>
+          <button type="button" onClick={() => void searchSources()} disabled={searching || searchQuery.trim().length < 2} style={{ minHeight: 40, padding: "0 13px", border: 0, borderRadius: 8, background: "var(--mint)", color: "#092018", fontWeight: 700, fontSize: 11 }}>{searching ? "Searching…" : "Search"}</button>
+        </div>
+        {searchResults.map(result => <article key={result.url} className="task-row" style={{ display: "block" }}>
+          <a href={result.url} target="_blank" rel="noreferrer" className="task-name">{result.title} ↗</a>
+          <p className="panel-sub" style={{ marginTop: 6, lineHeight: 1.6 }}>{result.snippet}</p>
+          <div className="task-meta">{result.wordCount} words · English Wikipedia · verify with primary sources</div>
+        </article>)}
+      </section> : null}
       <section className="panel">
         <div className="panel-head">
           <div><div className="panel-title">{researchMode ? "Research dossier" : "Knowledge capture"}</div>
