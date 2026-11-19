@@ -95,7 +95,7 @@ export default function IntegrationManager() {
         </div>)}
         <div className="preview-inline" style={{ marginTop: 12 }}><ShieldCheck size={15} /><span>Read-only access only. No repository files are executed, no commits are created, and no issues or pull requests are modified.</span></div>
       </>}
-      {github && !github.connected && <div className="preview-inline"><CircleAlert size={15} /><span>{github.error || "GitHub is not connected."} {github.repository || ""}</span></div>}
+      {github && !github.connected && <div className="preview-inline"><CircleAlert size={15} /><span>{github.error || "GitHub is not connected."}</span></div>}
       <div className="task-meta" style={{ marginTop: 12 }}><KeyRound size={11} style={{ display: "inline", marginRight: 5 }} />A token is optional for public repositories. If needed, use a fine-grained token limited to metadata and contents: read-only.</div>
     </section>
   </div>;
