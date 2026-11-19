@@ -54,7 +54,7 @@ Automated regression tests now cover canonicalization, allowlist denial, disable
 
 - `src/lib/ai/provider-gateway.ts` provides a shared OpenAI-compatible chat-completions interface for Ollama, Gemini, Groq, OpenRouter, Cloudflare Workers AI and NVIDIA NIM.
 - Local Ollama is eligible without an API key. External providers are blocked unless `AI_ALLOW_EXTERNAL_PROVIDERS=true` is explicitly set in the private server environment.
-- Provider order is owner-configurable with `AI_PROVIDER_ORDER`; custom endpoints are excluded unless `custom` is explicitly listed and external access is enabled.
+- Provider order is owner-configurable with `AI_PROVIDER_ORDER`. Arbitrary custom endpoints are intentionally unsupported so a paid endpoint cannot be added accidentally.
 - A provider must have a configured model (and an API key for hosted providers) before it can be selected. The gateway tries the configured order and returns only a generic failure message, never provider credentials.
 - This is a routing/configuration layer, not a guarantee that a provider's free quota is unlimited. Keep billing disabled with providers and monitor their quotas. No paid fallback is implemented.
 - Planner requests now use this gateway and record the selected provider/model in the run response.
