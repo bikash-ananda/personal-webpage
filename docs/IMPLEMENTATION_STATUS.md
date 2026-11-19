@@ -78,3 +78,10 @@ Last updated: 2026-11-18
 The login code is present but is not operational until a dedicated PostgreSQL database, Better Auth schema, SMTP sender and end-to-end tests are configured. Project/task APIs and AI planning depend on migration `0001_personal_os_core.sql`; hardware inventory and BOM depend on `0002_hardware_inventory_bom.sql`, and stock movement audit depends on `0003_hardware_stock_ledger.sql`. AI planning additionally requires a configured hosted or local OpenAI-compatible model endpoint. The ten agents are defined and the planner is model-backed. Approved task plans are saved atomically and audited; specialist tool execution is not yet enabled. PWA installation/offline behavior has not been validated on a physical Android device.
 
 No VPS deployment, DNS, shared Caddy, firewall or unrelated project has been changed. Production deployment remains blocked until the latest branch CI passes, database migration and backup/restore are tested, authentication and API security tests pass, and the owner explicitly approves deployment.
+
+### Free-first AI gateway
+
+- Added shared provider routing for local Ollama and configurable free-tier hosted providers.
+- External model calls remain disabled until `AI_ALLOW_EXTERNAL_PROVIDERS=true` is explicitly configured; custom endpoints require explicit provider ordering.
+- Planner uses the gateway; selected provider/model are returned for traceability.
+- Automated policy tests are included in CI. Full CI/Vercel validation is pending.
