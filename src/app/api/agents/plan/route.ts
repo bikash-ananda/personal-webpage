@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { pool } from "@/lib/auth";
 import { getOwnerContext, hasTrustedMutationOrigin } from "@/lib/server/owner";
 import { getAgent } from "@/lib/agents/registry";
+import { evaluateToolRequest } from "@/lib/agents/runtime";
 import { createAiChatCompletion } from "@/lib/ai/provider-gateway";
 
 export const dynamic="force-dynamic";
@@ -36,6 +37,8 @@ export async function POST(request:Request) {
  const agent=getAgent(agentKey);
  if(!agent) return NextResponse.json({error:"Unknown specialist agent."},{status:400,headers:noStore});
  if(!brief||brief.length>5000) return NextResponse.json({error:"A work brief is required (maximum 5000 characters)."},{status:400,headers:noStore});
+ const policy=evaluateToolRequest({ownerId:owner.ownerId,agentKey:agent.key,toolKey:"task_propose",target:"owner_workspace",args:{brief}});
+ if(policy.outcome!=="allow") return NextResponse.json({error:"This specialist is not permitted to propose tasks.",decision:policy},{status:403,headers:noStore});
  let runId:string|null=null;
  try{
   const client=await pool.connect();
@@ -50,7 +53,7 @@ export async function POST(request:Request) {
     await client.query("ROLLBACK");
     return NextResponse.json({error:"Planning limit reached. Try again later."},{status:429,headers:noStore});
    }
-   const run=await client.query("INSERT INTO agent_runs(owner_id,agent_key,task,status,autonomy_tier,input) VALUES($1,$2,$3,'running',0,$4::jsonb) RETURNING id",[owner.ownerId,agent.key,brief,JSON.stringify({brief,agent:agent.name})]);
+   const run=await client.query("INSERT INTO agent_runs(owner_id,agent_key,task,status,autonomy_tier,input) VALUES($1,$2,$3,'running',1,$4::jsonb) RETURNING id",[owner.ownerId,agent.key,brief,JSON.stringify({brief,agent:agent.name,toolKey:"task_propose"})]);
    runId=run.rows[0].id as string;
    await client.query("COMMIT");
   }catch(error){
