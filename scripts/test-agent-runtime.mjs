@@ -57,6 +57,23 @@ for (const toolKey of ["project_read", "task_read"]) {
   );
 }
 assert.deepEqual(
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "knowledge", toolKey: "knowledge_read", target: "owner_workspace", args: {} }),
+  { outcome: "allow", reason: "read_only_or_draft" },
+  "knowledge specialist must be able to retrieve owner-scoped memory",
+);
+assert.deepEqual(
+  runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "research", toolKey: "encyclopedia_search", target: "en.wikipedia.org", args: { query: "greenhouse automation" } }),
+  { outcome: "allow", reason: "read_only_or_draft" },
+  "research specialist must be able to discover public encyclopedia sources",
+);
+const writeDecision = runtime.evaluateToolRequest({
+  ownerId: "owner-1", agentKey: "knowledge", toolKey: "knowledge_write",
+  target: "owner-knowledge", args: { title: "Test", body: "Draft" },
+});
+assert.equal(writeDecision.outcome, "approval_required", "knowledge writes must always require owner approval");
+assert.equal(writeDecision.actionDigest.length, 64, "knowledge approval must bind a SHA-256 action digest");
+
+assert.deepEqual(
   runtime.evaluateToolRequest({ ownerId: "owner-1", agentKey: "engineering", toolKey: "github_read", target: "bikash-ananda/personal-webpage", args: {} }),
   { outcome: "allow", reason: "read_only_or_draft" },
   "engineering must be able to read the fixed allowlisted GitHub repository",
