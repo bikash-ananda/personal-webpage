@@ -85,3 +85,4 @@ No VPS deployment, DNS, shared Caddy, firewall or unrelated project has been cha
 - External model calls remain disabled until `AI_ALLOW_EXTERNAL_PROVIDERS=true` is explicitly configured; custom endpoints require explicit provider ordering.
 - Planner uses the gateway; selected provider/model are returned for traceability.
 - Automated policy tests are included in CI. Full CI/Vercel validation is pending.
+- Added an owner-authenticated, no-store provider status endpoint (`GET /api/ai/providers`) that exposes configured provider IDs/models and local-vs-hosted classification without revealing API keys or base URLs.
