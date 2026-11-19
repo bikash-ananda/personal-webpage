@@ -20,14 +20,14 @@ export type ToolDefinition = {
 };
 
 /**
- * Registry is intentionally metadata-only at this stage. No entry is executable.
- * An adapter must be implemented, tested and explicitly enabled before dispatch.
+ * Only the three bounded read-only adapters below are executable. All other
+ * capabilities remain disabled until their adapter and approval flow are tested.
  */
 export const toolRegistry: readonly ToolDefinition[] = [
-  { key: "project_read", label: "Read projects", description: "Read owner-scoped project records.", riskTier: 0, enabled: false, implemented: false, sideEffect: "none", targetScope: "owner" },
-  { key: "task_read", label: "Read tasks", description: "Read owner-scoped task records.", riskTier: 0, enabled: false, implemented: false, sideEffect: "none", targetScope: "owner" },
+  { key: "project_read", label: "Read projects", description: "Read owner-scoped project records.", riskTier: 0, enabled: true, implemented: true, sideEffect: "none", targetScope: "owner" },
+  { key: "task_read", label: "Read tasks", description: "Read owner-scoped task records.", riskTier: 0, enabled: true, implemented: true, sideEffect: "none", targetScope: "owner" },
   { key: "task_propose", label: "Propose tasks", description: "Create a task proposal for owner review; does not save tasks.", riskTier: 1, enabled: false, implemented: false, sideEffect: "draft", targetScope: "owner" },
-  { key: "github_read", label: "Read GitHub", description: "Read allowlisted repository metadata and status.", riskTier: 0, enabled: false, implemented: false, sideEffect: "none", targetScope: "repository" },
+  { key: "github_read", label: "Read GitHub", description: "Read allowlisted repository metadata and status.", riskTier: 0, enabled: true, implemented: true, sideEffect: "none", targetScope: "repository" },
   { key: "web_research", label: "Web research", description: "Search public sources and return cited findings.", riskTier: 0, enabled: false, implemented: false, sideEffect: "none", targetScope: "external_account" },
   { key: "knowledge_read", label: "Read knowledge", description: "Retrieve owner-authorized knowledge records.", riskTier: 0, enabled: false, implemented: false, sideEffect: "none", targetScope: "owner" },
   { key: "knowledge_write", label: "Save knowledge", description: "Create or update owner knowledge records.", riskTier: 2, enabled: false, implemented: false, sideEffect: "write", targetScope: "owner" },
