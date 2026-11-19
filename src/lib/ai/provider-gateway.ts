@@ -29,7 +29,30 @@ const PROVIDER_ENV: Record<Exclude<AiProviderId, "custom">, {
 };
 
 function cleanBaseUrl(value: string): string {
-  return value.trim().replace(/\/+$/, "");
+  return value.trim().replace(/\\/+$/, "");
+}
+
+function isAllowedProviderUrl(id: AiProviderId, value: string): boolean {
+  try {
+    const url = new URL(value);
+    if (url.username || url.password || url.search || url.hash) return false;
+    if (id === "ollama") {
+      return ["http:", "https:"].includes(url.protocol)
+        && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+    }
+    const allowedHosts: Record<Exclude<AiProviderId, "ollama">, string[]> = {
+      gemini: ["generativelanguage.googleapis.com"],
+      groq: ["api.groq.com"],
+      openrouter: ["openrouter.ai"],
+      cloudflare: ["api.cloudflare.com", "gateway.ai.cloudflare.com"],
+      nvidia: ["integrate.api.nvidia.com"],
+    };
+    return url.protocol === "https:"
+      && (url.port === "" || url.port === "443")
+      && allowedHosts[id].includes(url.hostname);
+  } catch {
+    return false;
+  }
 }
 
 /**
@@ -49,6 +72,7 @@ export function getConfiguredAiProviders(env: Env = process.env): AiProviderConf
     if (id !== "ollama" && env.AI_ALLOW_EXTERNAL_PROVIDERS !== "true") continue;
     const names = PROVIDER_ENV[id];
     const baseUrl = cleanBaseUrl(env[names.baseUrl] || names.defaultBaseUrl || "");
+    if (!baseUrl || !isAllowedProviderUrl(id, baseUrl)) continue;
     const model = env[names.model]?.trim() || "";
     const apiKey = names.apiKey ? env[names.apiKey]?.trim() : undefined;
     if (!baseUrl || !model) continue;
@@ -70,6 +94,21 @@ export async function createAiChatCompletion(input: {
   timeoutMs?: number;
   env?: Env;
 }): Promise<{ content: string; provider: AiProviderId; model: string }> {
+  if (!Array.isArray(input.messages) || input.messages.length < 1 || input.messages.length > 30) {
+    throw new AiGatewayError("AI requests must contain between 1 and 30 messages.");
+  }
+  let totalMessageChars = 0;
+  for (const message of input.messages) {
+    if (!message || !["system", "user", "assistant"].includes(message.role)
+      || typeof message.content !== "string" || message.content.length > 12000) {
+      throw new AiGatewayError("AI request contains an invalid or oversized message.");
+    }
+    totalMessageChars += message.content.length;
+  }
+  if (totalMessageChars > 30000) {
+    throw new AiGatewayError("AI request exceeds the total message size limit.");
+  }
+
   const providers = getConfiguredAiProviders(input.env);
   if (providers.length === 0) {
     throw new AiGatewayError("No free AI provider is configured. Configure a local Ollama model or a free-tier provider key and model.");
@@ -79,24 +118,39 @@ export async function createAiChatCompletion(input: {
     try {
       const headers: Record<string, string> = { "Content-Type": "application/json" };
       if (provider.apiKey) headers.Authorization = "Bearer " + provider.apiKey;
-      const response = await fetch(provider.baseUrl + "/chat/completions", {
+      const timeoutMs = Math.max(1000, Math.min(input.timeoutMs ?? 45000, 60000));
+      const endpoint = provider.baseUrl + "/chat/completions";
+      const requestBody = {
+        model: provider.model,
+        messages: input.messages,
+        temperature: 0.2,
+      };
+      let response = await fetch(endpoint, {
         method: "POST",
         headers,
-        signal: AbortSignal.timeout(input.timeoutMs ?? 45000),
-        body: JSON.stringify({
-          model: provider.model,
-          messages: input.messages,
-          temperature: 0.2,
-          response_format: { type: "json_object" },
-        }),
+        signal: AbortSignal.timeout(timeoutMs),
+        body: JSON.stringify({ ...requestBody, response_format: { type: "json_object" } }),
       });
+      // Some OpenAI-compatible providers/models do not implement JSON mode.
+      if (response.status === 400 || response.status === 422) {
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers,
+          signal: AbortSignal.timeout(timeoutMs),
+          body: JSON.stringify(requestBody),
+        });
+      }
       if (!response.ok) continue;
-      const payload = await response.json() as {
+      const declaredLength = Number(response.headers.get("content-length") || "0");
+      if (declaredLength > 256000) continue;
+      const responseText = await response.text();
+      if (responseText.length > 256000) continue;
+      const payload = JSON.parse(responseText) as {
         choices?: Array<{ message?: { content?: string } }>;
       };
-      const content = payload.choices?.[0]?.message?.content;
-      if (typeof content === "string" && content.trim()) {
-        return { content, provider: provider.id, model: provider.model };
+      const completionContent = payload.choices?.[0]?.message?.content;
+      if (typeof completionContent === "string" && completionContent.trim()) {
+        return { content: completionContent, provider: provider.id, model: provider.model };
       }
     } catch {
       // A provider outage, timeout or incompatible response must not expose
