@@ -1,6 +1,7 @@
 name: Personal OS CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, "integration/**"]
   pull_request:
@@ -79,7 +80,7 @@ jobs:
   deploy-preview:
     name: Deploy Personal AI OS preview
     needs: [validate, database-migrations]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/integration/bikash-personal-ai-os'
+    if: github.ref == 'refs/heads/integration/bikash-personal-ai-os'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
