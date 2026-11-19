@@ -33,9 +33,9 @@ function cleanBaseUrl(value: string): string {
 }
 
 /**
- * Free-first provider discovery. A provider is never inferred from an API key
- * alone: it must have an explicit model configured. Paid/custom endpoints are
- * Custom endpoints are deliberately unsupported to avoid accidental paid APIs.
+ * Free-first provider discovery. A provider needs an explicit model and, for
+ * hosted providers, an API key. Arbitrary custom endpoints are unsupported so
+ * a paid API cannot be added accidentally.
  */
 export function getConfiguredAiProviders(env: Env = process.env): AiProviderConfig[] {
   const requestedOrder = (env.AI_PROVIDER_ORDER || FREE_PROVIDER_ORDER.join(","))
