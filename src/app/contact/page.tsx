@@ -1,4 +1,3 @@
-import Link from "next/link";
 import PublicSubpage from "@/app/components/PublicSubpage";
 
 export default function ContactPage() {
