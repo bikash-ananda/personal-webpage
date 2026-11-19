@@ -23,6 +23,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install
+      - name: Agent runtime policy tests
+        run: npm run test:agent-runtime
       - name: Type check
         run: npm run typecheck
       - name: Lint
