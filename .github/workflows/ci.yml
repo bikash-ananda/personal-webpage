@@ -91,20 +91,27 @@ jobs:
         env:
           VPS_DEPLOY_HOST: ${{ secrets.VPS_DEPLOY_HOST }}
           VPS_DEPLOY_USER: ${{ secrets.VPS_DEPLOY_USER }}
-          VPS_DEPLOY_KEY: ${{ secrets.VPS_DEPLOY_KEY }}
+          VPS_DEPLOY_KEY_B64: ${{ secrets.VPS_DEPLOY_KEY_B64 }}
           VPS_DEPLOY_KNOWN_HOSTS: ${{ secrets.VPS_DEPLOY_KNOWN_HOSTS }}
         run: |
           set -euo pipefail
-          for name in VPS_DEPLOY_HOST VPS_DEPLOY_USER VPS_DEPLOY_KEY VPS_DEPLOY_KNOWN_HOSTS; do
+          for name in VPS_DEPLOY_HOST VPS_DEPLOY_USER VPS_DEPLOY_KEY_B64 VPS_DEPLOY_KNOWN_HOSTS; do
             if [ -z "${!name}" ]; then
               echo "::error::Missing GitHub Actions secret: $name"
               exit 1
             fi
           done
       - name: Start restricted SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.VPS_DEPLOY_KEY }}
+        env:
+          VPS_DEPLOY_KEY_B64: ${{ secrets.VPS_DEPLOY_KEY_B64 }}
+        run: |
+          set -euo pipefail
+          install -d -m 700 ~/.ssh
+          printf '%s' "$VPS_DEPLOY_KEY_B64" | base64 --decode > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/deploy_key
+          rm -f ~/.ssh/deploy_key
       - name: Configure pinned VPS host key
         env:
           VPS_DEPLOY_KNOWN_HOSTS: ${{ secrets.VPS_DEPLOY_KNOWN_HOSTS }}
